@@ -8,6 +8,7 @@ datasource db {
   provider = "postgresql"
   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  
 }
 
 model Post {
@@ -21,10 +22,70 @@ model Post {
 
 model User {
   id            String       @default(cuid()) @id
-  name          String?
-  email         String?   @unique
+  name          String
+  email         String   @unique
+  username      String
+  password      String
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   updatedAt     DateTime  @updatedAt @map(name: "updated_at")
   posts         Post[]
   @@map(name: "users")
+}
+
+model Deposit{
+    id      String  @default(cuid()) @id
+    staff_grade_1  Decimal
+    staff_grade_2  Decimal
+    staff_grade_3  Decimal
+    staff_grade_4  Decimal
+    staff_grade_5  Decimal
+    total_staff_grade_cost Decimal
+
+}
+
+model Monthly_seating_fees{
+    id      String  @default(cuid()) @id
+    workstation Decimal
+    utilities_amenities Decimal
+    it_support_hr   Decimal
+    accounting_pay_roll Decimal
+    total_monthly_seating_fess Decimal
+
+}
+
+model staff_monthly_salary{
+    id      String  @default(cuid()) @id
+    agent_salary Decimal
+    total_staff_monthly_salary  Decimal
+}
+ 
+model recruitment_fees{
+    id      String  @default(cuid()) @id
+    advertisement   Decimal
+    recruitment     Decimal
+    total_recruitment_fees  Decimal
+
+}
+
+model other_payments{
+    id      String  @default(cuid()) @id
+    services_phone      Decimal
+    computer_upgrade    Decimal
+    opti_company_taxes  Decimal 
+    month_13th_salary   Decimal 
+    medical_insurance   Decimal 
+    adobe_software      Decimal
+    total_other_payments Decimal
+    seperation_pay      Decimal
+
+}
+
+model monthly_payment{
+    id      String  @default(cuid()) @id
+    deposit_first_year_only Decimal
+    seating_fees Decimal
+    salary  Decimal
+    recruitment_fees    Decimal
+    other_payments Decimal
+    total_monthly_payment   Decimal
 }
