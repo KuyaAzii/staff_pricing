@@ -1,5 +1,5 @@
 // pages/api/login.ts
-import { NextApiResponse } from 'next';
+
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
