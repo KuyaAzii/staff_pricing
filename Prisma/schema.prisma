@@ -1,91 +1,124 @@
 // schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-  
-}
-
-model Post {
-  id        String     @default(cuid()) @id
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  String?
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model User {
-  id            String       @default(cuid()) @id
-  name          String
-  email         String   @unique
-  username      String
-  password      String
-  createdAt     DateTime  @default(now()) @map(name: "created_at")
-  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
-  posts         Post[]
+  id        Int    @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  username  String
+  password  String
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
   @@map(name: "users")
 }
 
-model Deposit{
-    id      String  @default(cuid()) @id
-    staff_grade_1  Decimal
-    staff_grade_2  Decimal
-    staff_grade_3  Decimal
-    staff_grade_4  Decimal
-    staff_grade_5  Decimal
-    total_staff_grade_cost Decimal
-
+model ClientProfiles {
+  id                Int            @id @default(autoincrement())
+  name              String
+  email             String           @unique
+  company           String
+  contactNumber     Int
+  address           String
+  staffSalary       SalaryCategory?  @relation(fields: [staffSalaryId], references: [id])
+  staffSalaryId     Int
+  gradeLevel        StaffCategory?   @relation(fields: [gradeLevelId], references: [id])
+  gradeLevelId      Int
+  staffPosition     PositionsCategory? @relation(fields: [staffPositionId], references: [id])
+  staffPositionId   Int
 }
 
-model Monthly_seating_fees{
-    id      String  @default(cuid()) @id
-    workstation Decimal
-    utilities_amenities Decimal
-    it_support_hr   Decimal
-    accounting_pay_roll Decimal
-    total_monthly_seating_fess Decimal
-
+model Deposit {
+  id            Int         @id @default(autoincrement())
+  deposit       Float
+  staffCategory StaffCategory @relation(fields: [staffCategoryId], references: [id])
+  staffCategoryId Int
 }
 
-model staff_monthly_salary{
-    id      String  @default(cuid()) @id
-    agent_salary Decimal
-    total_staff_monthly_salary  Decimal
+model StaffCategory {
+  id            Int             @id @default(autoincrement())
+  gradeLevel    Int
+  seatingFee    SeatingFees?
+  deposits      Deposit[]
+  clients       ClientProfiles[]
+  recruitmentFees RecruitmentFees?
 }
+
+
+model SeatingFees {
+  id                  Int        @id @default(autoincrement())
+  workstation         Float
+  utilitiesAmenities  Float
+  itSupportHr         Float
+  accountingPayRoll   Float
+  staffGrade          StaffCategory? @relation(fields: [staffGradeId], references: [id])
+  staffGradeId        Int      @unique 
+}
+
+model SalaryCategory {
+  id               Int        @id @default(autoincrement())
+  staffSalary      Float
+  clients          ClientProfiles[]
+  thirteenthMonthPay  OtherPayments[]  @relation("ThirteenthMonthPay")
+  seperationPay       OtherPayments[]  @relation("SeperationPay") 
+  
+}
+
+model PositionsCategory {
+  id               Int        @id @default(autoincrement())
+  staffPosition    String
+  clients          ClientProfiles[]
+}
+
+model RecruitmentFees {
+  id              Int           @id @default(autoincrement())
+  advertisement   Float
+  recruitment     Float
+  staffCategory   StaffCategory   @relation(fields: [staffCategoryId], references: [id])
+  staffCategoryId Int          @unique 
+}
+
+model OtherPayments {
+  id                  Int  @id @default(autoincrement())
+  servicesPhone       Float
+  computerUpgrade     Float
+  optiCompTaxes       Float
+  thirteenthMonthPay  SalaryCategory?  @relation("ThirteenthMonthPay", fields: [thirteenthMonthPayId], references: [id])
+  thirteenthMonthPayId Int?
+  seperationPay       SalaryCategory?  @relation("SeperationPay", fields: [seperationPayId], references: [id])
+  seperationPayId     Int?
+  medicalInsurance    Float
+  
+
+  
+}
+
+model TotalCost {
+  id                    Int  @id @default(autoincrement())
+  totalDeposit          Float
+  totalSeatingFee       Float
+  totalSalary           Float
+  totalRecruitment      Float
+  totalOtherPayment     Float
+  totalYearlyCost       Float
+
  
-model recruitment_fees{
-    id      String  @default(cuid()) @id
-    advertisement   Decimal
-    recruitment     Decimal
-    total_recruitment_fees  Decimal
-
 }
 
-model other_payments{
-    id      String  @default(cuid()) @id
-    services_phone      Decimal
-    computer_upgrade    Decimal
-    opti_company_taxes  Decimal 
-    month_13th_salary   Decimal 
-    medical_insurance   Decimal 
-    adobe_software      Decimal
-    total_other_payments Decimal
-    seperation_pay      Decimal
-
+model Cost {
+  id                   Int  @id @default(autoincrement())
+  monthlyTotalCost     Float
+  yearlyTotalCost      Float
 }
-
-model monthly_payment{
-    id      String  @default(cuid()) @id
-    deposit_first_year_only Decimal
-    seating_fees Decimal
-    salary  Decimal
-    recruitment_fees    Decimal
-    other_payments Decimal
-    total_monthly_payment   Decimal
+model Currency {
+  id                  Int @id @default(autoincrement())
+  auCurrency          Float
 }

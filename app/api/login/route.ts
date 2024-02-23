@@ -1,9 +1,9 @@
 // pages/api/login.ts
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request, res: NextApiResponse) {
+export async function POST(req: Request) {
   const body = await req.json();
   const { email, password } = body;
   try {
@@ -15,7 +15,7 @@ export async function POST(req: Request, res: NextApiResponse) {
       console.log('Login successful');
 
 
-      // res.status(200).json({ success: true, message: 'Login successful' });
+      
       return NextResponse.json({ data: [], message: "User created successfully!" }, { status: 200});
     } else {
       console.log('Invalid credentials');
