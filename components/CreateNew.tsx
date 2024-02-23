@@ -1,6 +1,6 @@
 //compunents/CreateNew.tsx
 "use client";
-import { StaffCategory, PositionsCategory, SalaryCategory } from '@prisma/client';
+import {PositionsCategory, StaffCategory, SalaryCategory } from '@prisma/client';
 import React, { useState, useEffect } from 'react';
 
 const CreateNew = () => {
