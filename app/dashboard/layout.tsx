@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedMenu, setSelectedMenu] = useState('dashboard');
@@ -28,11 +29,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 className={`fixed left-0 top-0 w-64 min-h-full bg-gray-900 p-4 z-10 sidebar-menu transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex items-center pb-4 border-b border-b-gray-800">
                     <img
-                        src="https://placehold.co/32x32"
-                        alt=""
-                        className="w-8 h-8 rounded object-cover"
+                        src="/logo.png"
+                        alt="Logo"
+                        className="w-45 h-20 rounded object-cover"
                     />
-                    <span className="text-lg font-bold text-white ml-3">Logo</span>
                 </div>
                 <ul className="mt-4">
                     <li className={`mb-1 group ${pathname === '/dashboard' ? 'active' : ''}`}>
@@ -44,14 +44,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <li className={`mb-1 group ${pathname.includes('lists') ? 'active' : ''}`}>
                     <Link href={'/dashboard/lists'} className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}>   <i className="ri-file-list-3-line mr-3 text-lg" /> Lists</Link>
                     </li>
-                    <li className={`mb-1 group ${selectedMenu === 'updatepricing' ? 'active' : ''}`}>
-                        <div
-                            className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}
-                            onClick={() => handleMenuClick('updatepricing', '/dashboard/updatepricing')}
-                        >
-                            <i className="ri-dashboard-line mr-3 text-lg" />
-                            <span className="text-sm">Update Price</span>
-                        </div>
+                    <li className={`mb-1 group ${pathname.includes('updatepricing') ? 'active' : ''}`}>
+                    <Link href={'/dashboard/updatepricing'} className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}>   <i className="ri-edit-2-fill mr-3 text-lg" /> Update Price</Link>
                     </li>
                     {/* ... (similar changes for other menu items) ... */}
                 </ul>

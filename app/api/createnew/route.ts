@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { ClientProfiles, PrismaClient } from '@prisma/client';
 import { NextResponse, NextRequest } from 'next/server';
 
 const prisma = new PrismaClient();
 
-const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number) => {
+const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number, client: ClientProfiles) => {
   try {
     const depositCost = await prisma.deposit.findFirst({
       where: {
@@ -13,6 +13,14 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number)
         deposit: true
       }
     });
+
+    const additionalCost = await prisma.additionalCost.findMany({
+      where: { clientProfilesId: client.id },
+      select: {
+        cost: true,
+        name: true
+      }
+    })
 
     const seatingFees = await prisma.seatingFees.findFirst({
       where: {
@@ -39,7 +47,7 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number)
     const otherFees = await prisma.otherPayments.findFirst({
       where: {
         id: 1
-      },     
+      },
       select: {
         servicesPhone: true,
         computerUpgrade: true,
@@ -47,73 +55,252 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number)
         thirteenthMonthPayId: true,
         seperationPayId: true,
         medicalInsurance: true,
-      }, 
+      },
     });
 
-    const totalSalary = staffSalary * 12;
+    const currency = await prisma.currency.findFirst({
+      where: {
+        id: 1
+      },
+      select: {
+        auCurrency: true
+      }
 
-    const totalYearlyCost =
-      totalSalary +
-      (depositCost?.deposit || 0) +
+    })
+
+    const totalAdditionalCost = additionalCost.reduce((n, {cost}) => n + cost, 0)
+
+    const yearlySalary = (staffSalary * 12).toFixed(2);
+
+    
+    const totalSeatingFee = (
       (seatingFees?.workstation || 0) +
       (seatingFees?.utilitiesAmenities || 0) +
       (seatingFees?.itSupportHr || 0) +
-      (seatingFees?.accountingPayRoll || 0) +
+      (seatingFees?.accountingPayRoll || 0)).toFixed(2);
+
+    const totalRecruitmentAdvertisingFee = (
       (recruitmentFees?.recruitment || 0) +
-      (recruitmentFees?.advertisement || 0) +
+      (recruitmentFees?.advertisement || 0)).toFixed(2);
+
+    const totalOtherFees = (
       (otherFees?.servicesPhone || 0) +
       (otherFees?.computerUpgrade || 0) +
       (otherFees?.optiCompTaxes || 0) +
       (otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) +
-      (otherFees?.seperationPayId ? staffSalary : staffSalary || 0)+
-      (otherFees?.medicalInsurance || 0);
+      (otherFees?.seperationPayId ? staffSalary : staffSalary || 0) +
+      totalAdditionalCost +
+      (otherFees?.medicalInsurance || 0)).toFixed(2);
 
-      const monthlyPayment = totalYearlyCost / 12;
+    // Total  cost
+    const totalYearlyCost = (parseFloat(yearlySalary) + (depositCost?.deposit || 0) + parseFloat(totalSeatingFee) + parseFloat(totalRecruitmentAdvertisingFee) + parseFloat(totalOtherFees)).toFixed(2);
+    const totalMonthlyCost = (parseFloat(totalYearlyCost) / 12).toFixed(2);
+    const totalAudYearlyCost = (parseFloat(totalYearlyCost) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudMonthlyCost = (parseFloat(totalAudYearlyCost) / 12).toFixed(2);
 
-      const totalSeatingFee = 
-      (seatingFees?.workstation || 0) +
-      (seatingFees?.utilitiesAmenities || 0) +
-      (seatingFees?.itSupportHr || 0) +
-      (seatingFees?.accountingPayRoll || 0);
+   
 
-      const totalRecruitmentAdvertisingFee = 
-      (recruitmentFees?.recruitment || 0) + 
-      (recruitmentFees?.advertisement || 0);
+    // Total Seating Fees Cost
+    const totalMonthlySeatingFee = (parseFloat(totalSeatingFee) / 12).toFixed(2);
+    const totalAudSeatingFee = (parseFloat(totalSeatingFee) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudMonthlySeatingFee = (parseFloat(totalAudSeatingFee) / 12).toFixed(2);
 
-      const totalOtherFees =
-      (otherFees?.servicesPhone || 0) +
-      (otherFees?.computerUpgrade || 0) +
-      (otherFees?.optiCompTaxes || 0) +
-      (otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) +
-      (otherFees?.seperationPayId ? staffSalary : staffSalary || 0 )+
-      (otherFees?.medicalInsurance || 0);
+
+    // Total Others Payment
+    const totalMonthlytotalOtherFees = (parseFloat(totalOtherFees) / 12).toFixed(2);
+    const totalAudtotalOtherFees = (parseFloat(totalOtherFees) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudMonthlytotalOtherFees = (parseFloat(totalAudtotalOtherFees) / 12).toFixed(2);
+
+    // Total Recuitment Fee Cost
+    const totalMonthlyRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / 12).toFixed(2);
+    const totalAudRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudMonthlyRecruitmentAdvertisingFee = (parseFloat(totalAudRecruitmentAdvertisingFee) / 12).toFixed(2);
+
+
+    // PHP Monthly 
+    const monthlyDeposit = ((depositCost?.deposit || 0) / 12).toFixed(2);
+
+    const monthlyWorkstation = ((seatingFees?.workstation || 0) / 12).toFixed(2);
+    const monthlyUtilitiesAmenities = ((seatingFees?.utilitiesAmenities || 0) / 12).toFixed(2);
+    const monthlyItSupportHr = ((seatingFees?.itSupportHr || 0) / 12).toFixed(2);
+    const monthlyAccountingPayRoll = ((seatingFees?.accountingPayRoll || 0) / 12).toFixed(2);
+
+    const monthlyRecruitment = ((recruitmentFees?.recruitment || 0) / 12).toFixed(2);
+    const monthlyAdvertisement = ((recruitmentFees?.advertisement || 0) / 12).toFixed(2);
+
+    const monthlyServicesPhone = ((otherFees?.servicesPhone || 0) / 12).toFixed(2);
+    const monthlyComputerUpgrade = ((otherFees?.computerUpgrade || 0) / 12).toFixed(2);
+    const monthyOptiComTaxes = ((otherFees?.optiCompTaxes || 0) / 12).toFixed(2);
+    const monthlyThirteenthMonthlyPay = ((otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) / 12).toFixed(2);
+    const monthlySeperationPay = ((otherFees?.seperationPayId ? staffSalary : staffSalary || 0) / 12).toFixed(2);
+    const monthlyMedicalInsurance = ((otherFees?.medicalInsurance || 0) / 12).toFixed(2);
+
+    const totalMonthlyAddCost =  (totalAdditionalCost / 12).toFixed(2);
+
+    // AUD Yearly
+    const audTotalAdditionalCost = (( totalAdditionalCost|| 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audWorkstation = ((seatingFees?.workstation || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audUtilitiesAmenities = ((seatingFees?.utilitiesAmenities || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audItSupportHr = ((seatingFees?.itSupportHr || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audAccountingPayRoll = ((seatingFees?.accountingPayRoll || 0) / (currency?.auCurrency || 0)).toFixed(2);
+
+    const audRecruitment = ((recruitmentFees?.recruitment || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audAdvertisement = ((recruitmentFees?.advertisement || 0) / (currency?.auCurrency || 0)).toFixed(2);
+
+    const audServicesPhone = ((otherFees?.servicesPhone || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audComputerUpgrade = ((otherFees?.computerUpgrade || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audOptiComTaxes = ((otherFees?.optiCompTaxes || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audThirteenthMonthlyPay = ((otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audSeperationPay = ((otherFees?.seperationPayId ? staffSalary : staffSalary || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audMedicalInsurance = ((otherFees?.medicalInsurance || 0) / (currency?.auCurrency || 0)).toFixed(2);
+
+
+
+    // AUD total Yearly
+    const audTotalYearlySalary = (parseFloat(yearlySalary) / (currency?.auCurrency || 0)).toFixed(2);
+    const audDeposit = ((depositCost?.deposit || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audTotalSeatingFee = (parseFloat(totalSeatingFee) / (currency?.auCurrency || 0)).toFixed(2);
+    const audtotalRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / (currency?.auCurrency || 0)).toFixed(2);
+    const audtotalOtherFees = (parseFloat(totalOtherFees) / (currency?.auCurrency || 0)).toFixed(2);
+
+    //AUD Monthly
+    const audMonthlyTotalAdditionalCost = (parseFloat(audTotalAdditionalCost) / 12).toFixed(2);
+    const audMonthlyDeposit = (parseFloat(audDeposit) / 12).toFixed(2);
+
+    const audMonthlySalary = (parseFloat(audTotalYearlySalary) / 12).toFixed(2);
+
+    const audMonthlyWorkstation = (parseFloat(audWorkstation) / 12).toFixed(2);
+    const audMonthlyUtilitiesAmenities = (parseFloat(audUtilitiesAmenities) / 12).toFixed(2);
+    const audMonthlyItSupportHr = (parseFloat(audItSupportHr) / 12).toFixed(2);
+    const audMonthlyAccountingPayRoll = (parseFloat(audAccountingPayRoll) / 12).toFixed(2);
+
+    const audMonthlyRecruitment = (parseFloat(audRecruitment) / 12).toFixed(2);
+    const audMonthlyAdvertisement = (parseFloat(audAdvertisement) / 12).toFixed(2);
+
+    const audMonthlyServicesPhone = (parseFloat(audServicesPhone) / 12).toFixed(2);
+    const audMonthlyComputerUpgrade = (parseFloat(audComputerUpgrade) / 12).toFixed(2);
+    const audMonthlyOptiComTaxes = (parseFloat(audOptiComTaxes) / 12).toFixed(2);
+    const audMonthlyThirteenthMonthlyPay = (parseFloat(audThirteenthMonthlyPay) / 12).toFixed(2);
+    const audMonthlySeperationPay = (parseFloat(audSeperationPay) / 12).toFixed(2);
+    const audMonthlyMedicalInsurance = (parseFloat(audMedicalInsurance) / 12).toFixed(2);
 
 
 
     return {
-      totalSalary,
+      yearlySalary,
       totalYearlyCost,
-      monthlyPayment,
-      depositCost: (depositCost?.deposit || 0),
+      totalMonthlyCost,
+      depositCost: depositCost?.deposit,
+
+      workStation: seatingFees?.workstation,
+      utilitiesAmenities: seatingFees?.utilitiesAmenities,
+      itSupportHr: seatingFees?.itSupportHr,
+      accountingPayRoll: seatingFees?.accountingPayRoll,
+
+      staffSalary: staffSalary,
+      audMonthlySalary,
+      recruitment: recruitmentFees?.recruitment,
+      advertisement: recruitmentFees?.advertisement,
+
+      servicesPhone: otherFees?.servicesPhone,
+      computerUpgrade: otherFees?.computerUpgrade,
+      optiCompTaxes: otherFees?.optiCompTaxes,
+      thirteenthMonthPay: otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary,
+      seperationPay: otherFees?.seperationPayId ? staffSalary : staffSalary,
+      medicalInsurance: otherFees?.medicalInsurance,
+
+
+      totalAudYearlyCost,
+      totalAudMonthlyCost,
+
+      totalMonthlySeatingFee,
+      totalAudSeatingFee,
+      totalAudMonthlySeatingFee,
+
+      totalMonthlytotalOtherFees,
+      totalAudtotalOtherFees,
+      totalAudMonthlytotalOtherFees,
+
+      totalMonthlyRecruitmentAdvertisingFee,
+      totalAudRecruitmentAdvertisingFee,
+      totalAudMonthlyRecruitmentAdvertisingFee,
+
       totalSeatingFee,
       totalRecruitmentAdvertisingFee,
-      totalOtherFees   
+      totalOtherFees,
+
+      monthlyDeposit,
+      monthlyWorkstation,
+      monthlyUtilitiesAmenities,
+      monthlyItSupportHr,
+      monthlyAccountingPayRoll,
+      monthlyRecruitment,
+      monthlyAdvertisement,
+      monthlyServicesPhone,
+      monthlyComputerUpgrade,
+      monthyOptiComTaxes,
+      monthlyThirteenthMonthlyPay,
+      monthlySeperationPay,
+      monthlyMedicalInsurance,
+
+      audWorkstation,
+      audUtilitiesAmenities,
+      audItSupportHr,
+      audAccountingPayRoll,
+      audRecruitment,
+      audAdvertisement,
+      audServicesPhone,
+      audComputerUpgrade,
+      audOptiComTaxes,
+      audThirteenthMonthlyPay,
+      audSeperationPay,
+      audMedicalInsurance,
+      audTotalYearlySalary,
+      audDeposit,
+      audTotalSeatingFee,
+      audtotalRecruitmentAdvertisingFee,
+      audtotalOtherFees,
+
+      audMonthlyDeposit,
+      audMonthlyWorkstation,
+      audMonthlyUtilitiesAmenities,
+      audMonthlyItSupportHr,
+      audMonthlyAccountingPayRoll,
+      audMonthlyRecruitment,
+      audMonthlyAdvertisement,
+      audMonthlyServicesPhone,
+      audMonthlyComputerUpgrade,
+      audMonthlyOptiComTaxes,
+      audMonthlyThirteenthMonthlyPay,
+      audMonthlySeperationPay,
+      audMonthlyMedicalInsurance,
+
+      additionalCost,
+      currency,
+      client
     };
-    
-    
+
+
   } catch (error) {
     console.error('Error calculating total yearly cost:', error);
     throw error;
   }
 };
 
+
+
+
 export async function GET(req: Request) {
+
   try {
-    const grades = await prisma.staffCategory.findMany();
-    const staffPosition = await prisma.positionsCategory.findMany();
-    const staffSalary = await prisma.salaryCategory.findMany();
-    
-    
+    const [grades, staffPosition, staffSalary] = await Promise.all([
+      prisma.staffCategory.findMany(),
+      prisma.positionsCategory.findMany(),
+      prisma.salaryCategory.findMany(),
+    ]);
+
+
+
     return NextResponse.json({ data: { grades, staffPosition, staffSalary }, message: "successfully!" }, { status: 200 });
   } catch (error) {
     console.error('Error fetching grade levels:', error);
@@ -123,7 +310,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { name, company, contactNumber, email, address, position, grade, salary } = body;
+  const { name, company, contactNumber, email, address, position, grade, salary, additionalCost } = body;
   try {
 
     const existingClient = await prisma.clientProfiles.findFirst({
@@ -132,15 +319,15 @@ export async function POST(req: Request) {
       }
     });
     if (existingClient) {
-     return NextResponse.json({ message: "Email is already in use." }, { status: 400 });
+      return NextResponse.json({ message: "Email is already in use." }, { status: 400 });
     }
-    
+
     const parsedContact = parseInt(contactNumber);
     const salaryCategory = await prisma.salaryCategory.findFirst({
       where: {
         staffSalary: parseFloat(salary)
       }
-      
+
     });
     console.log('Provided salary:', salary);
     if (!salaryCategory) {
@@ -166,7 +353,8 @@ export async function POST(req: Request) {
     if (!positionCategory) {
       throw new Error('Invalid staff position provided');
     }
-    
+
+    // newly created client
     const client = await prisma.clientProfiles.create({
       data: {
         name,
@@ -180,7 +368,25 @@ export async function POST(req: Request) {
       }
     });
 
-    const costs = await calculateClientStaffCost(staffCategory.id, parseFloat(salary));
+    //   // TODO: create othercost with the od of newly created client
+
+    await Promise.all(JSON.parse(additionalCost).map(async (item: any) => {
+      try {
+        const newAdditionalCost = await prisma.additionalCost.create({
+          data: {
+            name: item.name,
+            cost: parseFloat(item.cost),
+            ClientProfiles: { connect: { id: client.id } }
+          },
+
+        });
+        console.log("Additional cost created:", newAdditionalCost);
+      } catch (error) {
+        console.error("Error creating additional cost:", error);
+      }
+    }));
+
+    const costs = await calculateClientStaffCost(staffCategory.id, parseFloat(salary), client);
 
     return NextResponse.json({ data: costs, message: "User created successfully!" }, { status: 201 });
   } catch (error) {

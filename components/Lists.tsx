@@ -69,7 +69,7 @@ const Lists = () => {
       <h1 className="text-2xl font-bold mb-4">Invoice Lists</h1>
       <div className="overflow-auto rounded-lg shadow hidden md:block">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b-2 border-gray-200">
+          <thead className=" bg-gray-50 border-b-2 border-gray-200">
             <tr>
               <th className="w-100 p-3 text-sm font-semibold tracking-wide text-left">ID</th>
               <th className="w-150 p-3 text-sm font-semibold tracking-wide text-left">Name</th>
@@ -84,25 +84,25 @@ const Lists = () => {
                 <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{client.name}</td>
                 <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{client.company}</td>
                 <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">
-  <select
-    onChange={(e) => {
-      const selectedAction = e.target.value;
-      if (selectedAction === 'download') {
-        handleDownload(client.id);
-      } else if (selectedAction === 'viewPDF') {
-        handleViewPDF(client.id);
-      } else if (selectedAction === 'delete') {
-        handleDelete(client.id);
-      }
-    }}
-    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline"
-  >
-    <option value="default">Select Action</option>
-    <option value="download">Download</option>
-    <option value="viewPDF">View</option>
-    <option value="delete">Delete</option>
-  </select>
-</td>
+                <select
+                  onChange={(e) => {
+                    const selectedAction = e.target.value;
+                    if (selectedAction === 'download') {
+                      handleDownload(client.id);
+                    } else if (selectedAction === 'viewPDF') {
+                      handleViewPDF(client.id);
+                    } else if (selectedAction === 'delete') {
+                      handleDelete(client.id);
+                    }
+                  }}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                >
+                  <option value="default">Select Action</option>
+                  <option value="download">Download</option>
+                  <option value="viewPDF">View</option>
+                  <option value="delete">Delete</option>
+                </select>
+              </td>
               </tr>
             ))}
           </tbody>
@@ -117,7 +117,7 @@ const Lists = () => {
               value={rowsPerPage}
               onChange={handleRowsPerPageChange}
             >
-              <option value="5">5</option>
+              <option value="5                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ">5</option>
               <option value="10">10</option>
               <option value="20">20</option>
             </select>

@@ -10,7 +10,7 @@ datasource db {
 }
 
 model User {
-  id        Int    @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   username  String
@@ -22,103 +22,109 @@ model User {
 }
 
 model ClientProfiles {
-  id                Int            @id @default(autoincrement())
-  name              String
-  email             String           @unique
-  company           String
-  contactNumber     Int
-  address           String
-  staffSalary       SalaryCategory?  @relation(fields: [staffSalaryId], references: [id])
-  staffSalaryId     Int
-  gradeLevel        StaffCategory?   @relation(fields: [gradeLevelId], references: [id])
-  gradeLevelId      Int
-  staffPosition     PositionsCategory? @relation(fields: [staffPositionId], references: [id])
-  staffPositionId   Int
+  id              Int                @id @default(autoincrement())
+  name            String
+  email           String             @unique
+  company         String
+  contactNumber   Int
+  address         String
+  staffSalary     SalaryCategory?    @relation(fields: [staffSalaryId], references: [id])
+  staffSalaryId   Int
+  gradeLevel      StaffCategory?     @relation(fields: [gradeLevelId], references: [id])
+  gradeLevelId    Int
+  staffPosition   PositionsCategory? @relation(fields: [staffPositionId], references: [id])
+  staffPositionId Int
+  AdditionalCost  AdditionalCost[]
 }
 
 model Deposit {
-  id            Int         @id @default(autoincrement())
-  deposit       Float
-  staffCategory StaffCategory @relation(fields: [staffCategoryId], references: [id])
+  id              Int           @id @default(autoincrement())
+  deposit         Float
+  staffCategory   StaffCategory @relation(fields: [staffCategoryId], references: [id])
   staffCategoryId Int
 }
 
 model StaffCategory {
-  id            Int             @id @default(autoincrement())
-  gradeLevel    Int
-  seatingFee    SeatingFees?
-  deposits      Deposit[]
-  clients       ClientProfiles[]
+  id              Int              @id @default(autoincrement())
+  gradeLevel      Int
+  seatingFee      SeatingFees?
+  deposits        Deposit[]
+  clients         ClientProfiles[]
   recruitmentFees RecruitmentFees?
 }
 
-
 model SeatingFees {
-  id                  Int        @id @default(autoincrement())
-  workstation         Float
-  utilitiesAmenities  Float
-  itSupportHr         Float
-  accountingPayRoll   Float
-  staffGrade          StaffCategory? @relation(fields: [staffGradeId], references: [id])
-  staffGradeId        Int      @unique 
+  id                 Int            @id @default(autoincrement())
+  workstation        Float
+  utilitiesAmenities Float
+  itSupportHr        Float
+  accountingPayRoll  Float
+  staffGrade         StaffCategory? @relation(fields: [staffGradeId], references: [id])
+  staffGradeId       Int            @unique
 }
 
 model SalaryCategory {
-  id               Int        @id @default(autoincrement())
-  staffSalary      Float
-  clients          ClientProfiles[]
-  thirteenthMonthPay  OtherPayments[]  @relation("ThirteenthMonthPay")
-  seperationPay       OtherPayments[]  @relation("SeperationPay") 
-  
+  id                 Int              @id @default(autoincrement())
+  staffSalary        Float
+  clients            ClientProfiles[]
+  thirteenthMonthPay OtherPayments[]  @relation("ThirteenthMonthPay")
+  seperationPay      OtherPayments[]  @relation("SeperationPay")
 }
 
 model PositionsCategory {
-  id               Int        @id @default(autoincrement())
-  staffPosition    String
-  clients          ClientProfiles[]
+  id            Int              @id @default(autoincrement())
+  staffPosition String
+  clients       ClientProfiles[]
 }
 
 model RecruitmentFees {
   id              Int           @id @default(autoincrement())
   advertisement   Float
   recruitment     Float
-  staffCategory   StaffCategory   @relation(fields: [staffCategoryId], references: [id])
-  staffCategoryId Int          @unique 
+  staffCategory   StaffCategory @relation(fields: [staffCategoryId], references: [id])
+  staffCategoryId Int           @unique
 }
 
 model OtherPayments {
-  id                  Int  @id @default(autoincrement())
-  servicesPhone       Float
-  computerUpgrade     Float
-  optiCompTaxes       Float
-  thirteenthMonthPay  SalaryCategory?  @relation("ThirteenthMonthPay", fields: [thirteenthMonthPayId], references: [id])
+  id                   Int             @id @default(autoincrement())
+  servicesPhone        Float
+  computerUpgrade      Float
+  optiCompTaxes        Float
+  thirteenthMonthPay   SalaryCategory? @relation("ThirteenthMonthPay", fields: [thirteenthMonthPayId], references: [id])
   thirteenthMonthPayId Int?
-  seperationPay       SalaryCategory?  @relation("SeperationPay", fields: [seperationPayId], references: [id])
-  seperationPayId     Int?
-  medicalInsurance    Float
-  
-
-  
+  seperationPay        SalaryCategory? @relation("SeperationPay", fields: [seperationPayId], references: [id])
+  seperationPayId      Int?
+  medicalInsurance     Float
+  addCost              AdditionalCost? @relation("AddCost", fields: [addCostId], references: [id])
+  addCostId            Int?
 }
 
 model TotalCost {
-  id                    Int  @id @default(autoincrement())
-  totalDeposit          Float
-  totalSeatingFee       Float
-  totalSalary           Float
-  totalRecruitment      Float
-  totalOtherPayment     Float
-  totalYearlyCost       Float
-
- 
+  id                Int   @id @default(autoincrement())
+  totalDeposit      Float
+  totalSeatingFee   Float
+  totalSalary       Float
+  totalRecruitment  Float
+  totalOtherPayment Float
+  totalYearlyCost   Float
 }
 
 model Cost {
-  id                   Int  @id @default(autoincrement())
-  monthlyTotalCost     Float
-  yearlyTotalCost      Float
+  id               Int   @id @default(autoincrement())
+  monthlyTotalCost Float
+  yearlyTotalCost  Float
 }
+
 model Currency {
-  id                  Int @id @default(autoincrement())
-  auCurrency          Float
+  id         Int   @id @default(autoincrement())
+  auCurrency Float
+}
+
+model AdditionalCost {
+  id               Int             @id @default(autoincrement())
+  name             String
+  cost             Float
+  addCost          OtherPayments[] @relation("AddCost")
+  ClientProfiles   ClientProfiles? @relation(fields: [clientProfilesId], references: [id])
+  clientProfilesId Int?
 }
