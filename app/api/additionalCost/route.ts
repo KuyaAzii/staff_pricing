@@ -1,7 +1,7 @@
 // pages/api/additionalCost.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+
 
 const prisma = new PrismaClient();
 
@@ -26,15 +26,6 @@ export  async function POST(req: NextRequest) {
             
         }
     }));
-    // //   const { name, cost }: { name: string; cost: number } = await req.json();
-
-     
-    //   const newAdditionalCost = await prisma.additionalCost.create({
-    //     data: {
-    //       name,
-    //       cost,
-    //     },
-    //   });
  
       console.log('New additional cost:', data);
 

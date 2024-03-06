@@ -1,6 +1,6 @@
 // pages/api/updatepricing.ts
 import { PrismaClient } from '@prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { NextApiRequest } from 'next';
 
 const prisma = new PrismaClient();

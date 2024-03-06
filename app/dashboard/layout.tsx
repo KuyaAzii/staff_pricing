@@ -6,18 +6,12 @@ import { useState } from "react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedMenu, setSelectedMenu] = useState('dashboard');
     const pathname = usePathname()
     
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
     };
 
-    const handleMenuClick = (menu: string, href: string) => {
-        setSelectedMenu(menu);
-        toggleSidebar();
-
-    };
 
     return (
         <><link

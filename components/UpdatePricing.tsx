@@ -1,7 +1,7 @@
 // components/UpdatePricing.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Deposit, SeatingFees, RecruitmentFees, OtherPayments, Currency } from '@prisma/client';
+import { Deposit, SeatingFees} from '@prisma/client';
 import EditForm from './EditForm';
 import Button from './Button';
 

@@ -1,6 +1,6 @@
 //compunents/CreateNew.tsx
 "use client";
-import { PositionsCategory, StaffCategory, SalaryCategory, SeatingFees, Currency, ClientProfiles } from '@prisma/client';
+import { PositionsCategory, StaffCategory, SalaryCategory, Currency, ClientProfiles } from '@prisma/client';
 import React, { useState, useEffect } from 'react';
 import DynamicInputFields from './InputField';
 
@@ -754,30 +754,6 @@ const CreateNew = () => {
                     </tr>
                   </tbody>
                 </table>
-                {/* <div className="text-right mb-8">
-                    <div className="text-gray-700 mr-2">Yearly PHP total:</div>
-                    <div className="text-gray-700">$425.00</div>
-                    <div className="text-gray-700 mr-2">MonthlyPHP total:</div>
-                    <div className="text-gray-700">$425.00</div>
-                </div>
-                <div className="text-right mb-8">
-                <div className="text-gray-700 mr-2">Yearly AUD total:</div>
-                    <div className="text-gray-700">$425.00</div>
-                    <div className="text-gray-700 mr-2">Monthly AUD total:</div>
-                    <div className="text-gray-700">$425.00</div>
-
-                </div> */
-                /* <div className="flex justify-end mb-8">
-                    <div className="text-gray-700 mr-2">Total:</div>
-                    <div className="text-gray-700 font-bold text-xl">$450.50</div>
-
-                    
-                </div>
-                <div className="border-t-2 border-gray-300 pt-8 mb-8">
-                    <div className="text-gray-700 mb-2"></div>
-                    <div className="text-gray-700 mb-2"></div>
-                    <div className="text-gray-700"></div>
-                </div> */}
               </div>
             )
 

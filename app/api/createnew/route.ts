@@ -1,5 +1,5 @@
 import { ClientProfiles, PrismaClient } from '@prisma/client';
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse} from 'next/server';
 
 const prisma = new PrismaClient();
 
@@ -135,10 +135,8 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
     const monthlySeperationPay = ((otherFees?.seperationPayId ? staffSalary : staffSalary || 0) / 12).toFixed(2);
     const monthlyMedicalInsurance = ((otherFees?.medicalInsurance || 0) / 12).toFixed(2);
 
-    const totalMonthlyAddCost =  (totalAdditionalCost / 12).toFixed(2);
-
     // AUD Yearly
-    const audTotalAdditionalCost = (( totalAdditionalCost|| 0) / (currency?.auCurrency || 0)).toFixed(2);
+  
     const audWorkstation = ((seatingFees?.workstation || 0) / (currency?.auCurrency || 0)).toFixed(2);
     const audUtilitiesAmenities = ((seatingFees?.utilitiesAmenities || 0) / (currency?.auCurrency || 0)).toFixed(2);
     const audItSupportHr = ((seatingFees?.itSupportHr || 0) / (currency?.auCurrency || 0)).toFixed(2);
@@ -164,7 +162,6 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
     const audtotalOtherFees = (parseFloat(totalOtherFees) / (currency?.auCurrency || 0)).toFixed(2);
 
     //AUD Monthly
-    const audMonthlyTotalAdditionalCost = (parseFloat(audTotalAdditionalCost) / 12).toFixed(2);
     const audMonthlyDeposit = (parseFloat(audDeposit) / 12).toFixed(2);
 
     const audMonthlySalary = (parseFloat(audTotalYearlySalary) / 12).toFixed(2);

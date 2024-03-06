@@ -30,26 +30,6 @@ export default function DynamicInputFields(
         setShowInputFields(false);
     };
 
-    const saveInputFields = async () => {
-        try {
-            const response = await fetch('/api/additionalCost', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(inputFields),
-            });
-
-
-            if (!response.ok) {
-                throw new Error('Failed to save input fields');
-            }
-
-            console.log('Input fields saved successfully');
-        } catch (error) {
-            console.error('Error saving input fields:', error);
-        }
-    };
 
     return (
         <div>
@@ -86,9 +66,6 @@ export default function DynamicInputFields(
                 <>
                     <button type="button" onClick={clearInputFields} className="bg-white text-gray-800 font-bold py-2 px-4 rounded ml-2">
                         Clear
-                    </button>
-                    <button type="button" onClick={saveInputFields} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded ml-2">
-                        Save
                     </button>
                 </>
             )}
