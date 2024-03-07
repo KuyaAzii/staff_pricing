@@ -35,6 +35,8 @@ model ClientProfiles {
   staffPosition   PositionsCategory? @relation(fields: [staffPositionId], references: [id])
   staffPositionId Int
   AdditionalCost  AdditionalCost[]
+  ourPdf          OurPdf[]
+  clientPdf       ClientPdf[]
 }
 
 model Deposit {
@@ -117,7 +119,8 @@ model Cost {
 
 model Currency {
   id         Int   @id @default(autoincrement())
-  auCurrency Float
+  country String
+  currency Float
 }
 
 model AdditionalCost {
@@ -128,3 +131,37 @@ model AdditionalCost {
   ClientProfiles   ClientProfiles? @relation(fields: [clientProfilesId], references: [id])
   clientProfilesId Int?
 }
+
+
+model OurPdf {
+  id          Int         @id @default(autoincrement())
+  filename    String?
+  url         String?
+  title       String?
+  description String?
+  size        Int?
+  clientPdfs  ClientPdf[]
+  ourPdfClientProfiles      ClientProfiles?  @relation(fields: [ourPdfClientProfilesId], references: [id])
+  ourPdfClientProfilesId  Int?
+}
+
+model ClientPdf {
+  id          Int      @id @default(autoincrement())
+  ourPdf      OurPdf?  @relation(fields: [ourPdfId], references: [id])
+  ourPdfId    Int
+  filename    String?
+  url         String?
+  title       String?
+  description String?
+  size        Int?
+  clientPdfClientProfiles      ClientProfiles?  @relation(fields: [clientPdfClientProfilesId], references: [id])
+  clientPdfClientProfilesId  Int?
+}
+
+
+
+
+
+
+
+

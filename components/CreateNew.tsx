@@ -1,7 +1,7 @@
 //compunents/CreateNew.tsx
 "use client";
 import { PositionsCategory, StaffCategory, SalaryCategory, Currency, ClientProfiles } from '@prisma/client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import DynamicInputFields from './InputField';
 
 const CreateNew = () => {
@@ -16,6 +16,7 @@ const CreateNew = () => {
   const [grades, setGrades] = useState<StaffCategory[] | null>(null);
   const [positions, setPositions] = useState<PositionsCategory[] | null>(null);
   const [salaries, setSalaries] = useState<SalaryCategory[] | null>(null);
+  const [currencies, setCurrency,] = useState<Currency[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [inputFields, setInputFields] = useState<{ name: string; cost: string }[]>([]);
@@ -52,6 +53,8 @@ const CreateNew = () => {
   const [totalMonthlyRecruitmentAdvertisingFee, setTotalMonthlyRecruitmentAdvertisingFee] = useState<number | null>(null);
   const [totalAudRecruitmentAdvertisingFee, setTotalAudRecruitmentAdvertisingFee] = useState<number | null>(null);
   const [totalAudMonthlyRecruitmentAdvertisingFee, setTotalAudMonthlyRecruitmentAdvertisingFee] = useState<number | null>(null);
+  const [toselectedCurrency, setToselectedCurrency] = useState<number | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
   const [monthlyDeposit, setMonthlyDeposit] = useState<number | null>(null);
   const [monthlyWorkstation, setMonthlyWorkstation] = useState<number | null>(null);
@@ -102,6 +105,7 @@ const CreateNew = () => {
   const [additionalCost, setAdditionalCost] = useState([])
   const [currency, setCurreny] = useState<Currency>()
   const [client, setClient] = useState<ClientProfiles>()
+ 
 
   const [formData, setFormData] = useState({
     name: "",
@@ -113,6 +117,7 @@ const CreateNew = () => {
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<String | null>(null);
   const [selectedSalary, setSelectedSalary] = useState<number | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchGradeLevels = async () => {
@@ -127,10 +132,11 @@ const CreateNew = () => {
           throw new Error('Failed to fetch grade levels');
         }
         const data = await response.json();
-        const { grades, staffPosition, staffSalary } = data.data;
+        const { grades, staffPosition, staffSalary, currency } = data.data;
         setGrades(grades);
         setPositions(staffPosition);
         setSalaries(staffSalary);
+        setCurrency(currency);
       } catch (error) {
         console.error('Error fetching grade levels:', error);
       }
@@ -163,6 +169,11 @@ const CreateNew = () => {
     setSelectedSalary(selectedSalaryId);
   };
 
+  const handleOnchangeSelectedCurrency = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedCurrencyId= parseInt(e.target.value);
+    setSelectedCurrency(selectedCurrencyId);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -177,6 +188,7 @@ const CreateNew = () => {
           grade: selectedGrade,
           position: selectedPosition,
           salary: selectedSalary,
+          currency : selectedCurrency,
           additionalCost: JSON.stringify(inputFields)
         }),
       });
@@ -203,7 +215,7 @@ const CreateNew = () => {
 
         setServicesPhone(responseData.data.servicesPhone);
         setComputerUpgrade(responseData.data.computerUpgrade);
-        setOptiCompTaxes(responseData.data.computerUpgrade);
+        setOptiCompTaxes(responseData.data.optiCompTaxes);
         setThirteenthMonthPay(responseData.data.thirteenthMonthPay);
         setSeperationPay(responseData.data.seperationPay);
         setMedicalInsurance(responseData.data.medicalInsurance);
@@ -222,6 +234,8 @@ const CreateNew = () => {
         setTotalMonthlyRecruitmentAdvertisingFee(responseData.data.totalMonthlyRecruitmentAdvertisingFee);
         setTotalAudRecruitmentAdvertisingFee(responseData.data.totalAudRecruitmentAdvertisingFee);
         setTotalAudMonthlyRecruitmentAdvertisingFee(responseData.data.totalAudMonthlyRecruitmentAdvertisingFee);
+        setToselectedCurrency(responseData.data.toselectedCurrency);
+        setSelectedCountry(responseData.data.selectedCountry);
 
         setMonthlyDeposit(responseData.data.monthlyDeposit);
         setMonthlyWorkstation(responseData.data.monthlyWorkstation);
@@ -269,8 +283,8 @@ const CreateNew = () => {
         setAudMonthlySeperationPay(responseData.data.audMonthlySeperationPay);
         setAudMonthlyMedicalInsurance(responseData.data.audMonthlyMedicalInsurance);
         setAdditionalCost(responseData.data.additionalCost);
-        setCurreny(responseData.data.currency)
-        setClient(responseData.data.client)
+        setCurreny(responseData.data.toselectedCurrency);
+        setClient(responseData.data.client);
       } else {
         setError(responseData.message || 'Input Failed. Please check your Input');
         console.error('Input Failed:', responseData.message || 'Unknown error');
@@ -280,6 +294,12 @@ const CreateNew = () => {
       console.error('Unexpected error during computation Error:', error);
 
     }
+  };
+  const numberWithCommas = (number: { toLocaleString: (arg0: string, arg1: { minimumFractionDigits: number; maximumFractionDigits: number; }) => any; }) => {
+    return number.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   return (
@@ -365,8 +385,17 @@ const CreateNew = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">_______OPTIONAL______</label>
-
+              <label className="block text-sm font-medium text-gray-700">Currency</label>
+              <select
+                className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                onChange={handleOnchangeSelectedCurrency}
+              >
+                {currencies?.map((currency, index: number) => (
+                  <option key={index} value={currency.currency}>{currency.country}</option>
+                ))}
+              </select>
+            </div>
+              <div>
                 <DynamicInputFields
                   inputFields={inputFields} setInputFields={setInputFields}
                 />
@@ -470,17 +499,66 @@ const CreateNew = () => {
             totalAudRecruitmentAdvertisingFee !== null &&
             totalAudMonthlyRecruitmentAdvertisingFee !== null &&
 
+            toselectedCurrency !== null &&
+            selectedCountry !== null &&
 
             !error &&
             (
-              <div className="w-3/4 mx-auto bg-white rounded-lg shadow-lg px-8 py-10">
+              <div  className="w-3/4 mx-auto bg-white rounded-lg shadow-lg px-8 py-10" >
+              <div className="mx-auto bg-white rounded-lg shadow-lg px-8 py-10 mb-10">
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <img
+                    src="/logo.png"
+                    alt="Logo"
+                    className="h-20 w-45 mr-2 rounded object-cover" />
+                </div>
+                <div className="text-gray-700">
+                  <div> </div>
+                  <div className="font-bold text-xl mb-2">Quotation</div>
+                  <div className="text-sm"><p>Date: {formattedDate}</p></div>
+                  <div className="text-sm">No. #{client?.id}</div>
+                </div>
+              </div>
+              <div className="border-b-2 border-gray-300 pb-8 mb-8">
+                <div className="text-gray-700 font-semibold text-lg mb-10">Optimum Offshoring Inc.</div>
+                <div className="text-gray-700 mb-2">  Name: {client?.name}</div>
+                <div className="text-gray-700 mb-2">Company Name: {client?.company}</div>
+                <div className="text-gray-700 mb-2">Addres: {client?.address}</div>
+                <div className="text-gray-700">Email: {client?.email}</div>
+              </div>
+
+              <table className="w-full text-left border-b-2 border-gray-300 pb-8 mb-20">
+                <thead>
+                  <tr>
+                    <th className="text-gray-700 font-bold uppercase py-2">Total Cost</th>
+                    <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
+                    <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
+                    <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry} yearly</th>
+                    <th className="text-gray-700 font-bold uppercase py-2">{selectedCountry} Monthly</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-4 text-gray-700 font-bold">Total</td>
+                    <td className="py-4 text-gray-700 font-bold">{numberWithCommas(totalYearlyCost)}</td>
+                    <td className="py-4 text-gray-700 font-bold">{totalMonthlyCost}</td>
+                    <td className="py-4 text-gray-700 font-bold">{totalAudYearlyCost}</td>
+                    <td className="py-4 text-gray-700 font-bold">{totalAudMonthlyCost}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+            </div>
+
+              <div className="mx-auto bg-white rounded-lg shadow-lg px-8 py-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <img
                       src="/logo.png"
                       alt="Logo"
-                      className="h-20 w-45 mr-2 rounded object-cover"
-                    />
+                      className="h-20 w-45 mr-2 rounded object-cover" />
                   </div>
                   <div className="text-gray-700">
                     <div> </div>
@@ -489,275 +567,281 @@ const CreateNew = () => {
                     <div className="text-sm">No. #{client?.id}</div>
                   </div>
                 </div>
-                <div className="border-b-2 border-gray-300 pb-8 mb-8">
-                  <div className="text-gray-700 font-semibold text-lg mb-10">Optimum Offshoring Inc.</div>
-                  <div className="text-gray-700 mb-2">  Name: {client?.name}</div>
-                  <div className="text-gray-700 mb-2">Company Name: {client?.company}</div>
-                  <div className="text-gray-700 mb-2">Addres: {client?.address}</div>
-                  <div className="text-gray-700">Email: {client?.email}</div>
-                </div>
-                <table className="w-full text-left mb-8">
-                  <thead>
-                    <tr>
-                      <th className="text-gray-700 font-bold uppercase py-2">DEPOSIT</th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD yearly</th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD Monthly</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-4 text-gray-700">Deposit: </td>
-                      <td className="py-4 text-gray-700">{depositCost}</td>
-                      <td className="py-4 text-gray-700">{monthlyDeposit}</td>
-                      <td className="py-4 text-gray-700">{audDeposit}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">TOTAL: </td>
-                      <td className="py-4 text-gray-700">{depositCost}</td>
-                      <td className="py-4 text-gray-700">{monthlyDeposit}</td>
-                      <td className="py-4 text-gray-700">{audDeposit}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
-                    </tr>
-                  </tbody>
+                    <div className="border-b-2 border-gray-300 pb-8 mb-8">
+                      <div className="text-gray-700 font-semibold text-lg mb-10">Optimum Offshoring Inc.</div>
+                      <div className="text-gray-700 mb-2">  Name: {client?.name}</div>
+                      <div className="text-gray-700 mb-2">Company Name: {client?.company}</div>
+                      <div className="text-gray-700 mb-2">Addres: {client?.address}</div>
+                      <div className="text-gray-700">Email: {client?.email}</div>
 
-                  <thead>
-                    <tr>
-                      <th className="text-gray-700 font-bold uppercase py-2">Seating Fees</th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD yearly</th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD Monthly</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-4 text-gray-700">WorkStation: </td>
-                      <td className="py-4 text-gray-700">{workStation}</td>
-                      <td className="py-4 text-gray-700">{monthlyWorkstation}</td>
-                      <td className="py-4 text-gray-700">{audWorkstation}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyWorkstation}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Utilities & Amenities</td>
-                      <td className="py-4 text-gray-700">{utilitiesAmenities}</td>
-                      <td className="py-4 text-gray-700">{monthlyUtilitiesAmenities}</td>
-                      <td className="py-4 text-gray-700">{audUtilitiesAmenities}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyUtilitiesAmenities}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">IT Support, HR </td>
-                      <td className="py-4 text-gray-700"> {itSupportHr} </td>
-                      <td className="py-4 text-gray-700">{monthlyItSupportHr}</td>
-                      <td className="py-4 text-gray-700">{audItSupportHr}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyItSupportHr}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Accounting & Pay Roll</td>
-                      <td className="py-4 text-gray-700">{accountingPayRoll}</td>
-                      <td className="py-4 text-gray-700">{monthlyAccountingPayRoll}</td>
-                      <td className="py-4 text-gray-700">{audAccountingPayRoll}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyAccountingPayRoll}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Total</td>
-                      <td className="py-4 text-gray-700">{totalSeatingFee}</td>
-                      <td className="py-4 text-gray-700">{totalMonthlySeatingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudSeatingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudMonthlySeatingFee}</td>
-                    </tr>
-                  </tbody>
+                    </div>
+                    <table className="w-full text-left mb-8">
+                      <thead>
+                        <tr>
+                          <th className="text-gray-700 font-bold uppercase py-2">DEPOSIT</th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  yearly</th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  Monthly</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-4 text-gray-700">Deposit: </td>
+                          <td className="py-4 text-gray-700">{depositCost}</td>
+                          <td className="py-4 text-gray-700">{monthlyDeposit}</td>
+                          <td className="py-4 text-gray-700">{audDeposit}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">TOTAL: </td>
+                          <td className="py-4 text-gray-700">{depositCost}</td>
+                          <td className="py-4 text-gray-700">{monthlyDeposit}</td>
+                          <td className="py-4 text-gray-700">{audDeposit}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
+                        </tr>
+                      </tbody>
 
-                  <thead>
-                    <tr>
-                      <th className="text-gray-700 font-bold uppercase py-2">Staff Fees</th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD yearly</th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD Monthly</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-4 text-gray-700">Salary: </td>
-                      <td className="py-4 text-gray-700">{yearlySalary}</td>
-                      <td className="py-4 text-gray-700">{staffSalary}</td>
-                      <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
-                      <td className="py-4 text-gray-700">{audMonthlySalary}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">TOTAL: </td>
-                      <td className="py-4 text-gray-700">{yearlySalary}</td>
-                      <td className="py-4 text-gray-700">{staffSalary}</td>
-                      <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
-                      <td className="py-4 text-gray-700">{audMonthlySalary}</td>
-                    </tr>
-                  </tbody>
+                      <thead>
+                        <tr>
+                          <th className="text-gray-700 font-bold uppercase py-2">Seating Fees</th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  yearly</th>
+                          <th className="text-gray-700 font-bold uppercase py-2">{selectedCountry} Monthly</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-4 text-gray-700">WorkStation: </td>
+                          <td className="py-4 text-gray-700">{workStation}</td>
+                          <td className="py-4 text-gray-700">{monthlyWorkstation}</td>
+                          <td className="py-4 text-gray-700">{audWorkstation}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyWorkstation}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Utilities & Amenities</td>
+                          <td className="py-4 text-gray-700">{utilitiesAmenities}</td>
+                          <td className="py-4 text-gray-700">{monthlyUtilitiesAmenities}</td>
+                          <td className="py-4 text-gray-700">{audUtilitiesAmenities}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyUtilitiesAmenities}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">IT Support, HR </td>
+                          <td className="py-4 text-gray-700"> {itSupportHr} </td>
+                          <td className="py-4 text-gray-700">{monthlyItSupportHr}</td>
+                          <td className="py-4 text-gray-700">{audItSupportHr}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyItSupportHr}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Accounting & Pay Roll</td>
+                          <td className="py-4 text-gray-700">{accountingPayRoll}</td>
+                          <td className="py-4 text-gray-700">{monthlyAccountingPayRoll}</td>
+                          <td className="py-4 text-gray-700">{audAccountingPayRoll}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyAccountingPayRoll}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Total</td>
+                          <td className="py-4 text-gray-700">{totalSeatingFee}</td>
+                          <td className="py-4 text-gray-700">{totalMonthlySeatingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudSeatingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudMonthlySeatingFee}</td>
+                        </tr>
+                      </tbody>
 
-                  <thead>
-                    <tr>
-                      <th className="text-gray-700 font-bold uppercase py-2">Recruitment Fees</th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD yearly</th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD Monthly</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-4 text-gray-700">Advertisement </td>
-                      <td className="py-4 text-gray-700">{advertisement}</td>
-                      <td className="py-4 text-gray-700">{monthlyAdvertisement}</td>
-                      <td className="py-4 text-gray-700">{audAdvertisement}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyAdvertisement}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Recruitment: </td>
-                      <td className="py-4 text-gray-700">{recruitment}</td>
-                      <td className="py-4 text-gray-700">{monthlyRecruitment}</td>
-                      <td className="py-4 text-gray-700">{audRecruitment}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyRecruitment}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">TOTAL </td>
-                      <td className="py-4 text-gray-700"> {totalRecruitmentAdvertisingFee} </td>
-                      <td className="py-4 text-gray-700">{totalMonthlyRecruitmentAdvertisingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudRecruitmentAdvertisingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudMonthlyRecruitmentAdvertisingFee}</td>
-                    </tr>
-                  </tbody>
+                      <thead>
+                        <tr>
+                          <th className="text-gray-700 font-bold uppercase py-2">Staff Fees</th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  yearly</th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry} Monthly</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-4 text-gray-700">Salary: </td>
+                          <td className="py-4 text-gray-700">{yearlySalary}</td>
+                          <td className="py-4 text-gray-700">{staffSalary}</td>
+                          <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
+                          <td className="py-4 text-gray-700">{audMonthlySalary}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">TOTAL: </td>
+                          <td className="py-4 text-gray-700">{yearlySalary}</td>
+                          <td className="py-4 text-gray-700">{staffSalary}</td>
+                          <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
+                          <td className="py-4 text-gray-700">{audMonthlySalary}</td>
+                        </tr>
+                      </tbody>
 
-                  <thead>
-                    <tr>
-                      <th className="text-gray-700 font-bold uppercase py-2">Other Payments</th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD yearly</th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD Monthly</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-4 text-gray-700">Service Phone: </td>
-                      <td className="py-4 text-gray-700">{servicesPhone}</td>
-                      <td className="py-4 text-gray-700">{monthlyServicesPhone}</td>
-                      <td className="py-4 text-gray-700">{audServicesPhone}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyServicesPhone}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Computer Upgrade</td>
-                      <td className="py-4 text-gray-700">{computerUpgrade}</td>
-                      <td className="py-4 text-gray-700">{monthlyComputerUpgrade}</td>
-                      <td className="py-4 text-gray-700">{audComputerUpgrade}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyComputerUpgrade}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Opti Company Taxes </td>
-                      <td className="py-4 text-gray-700"> {optiCompTaxes} </td>
-                      <td className="py-4 text-gray-700">{monthyOptiComTaxes}</td>
-                      <td className="py-4 text-gray-700">{audOptiComTaxes}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyOptiComTaxes}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Seperation Pay</td>
-                      <td className="py-4 text-gray-700">{seperationPay}</td>
-                      <td className="py-4 text-gray-700">{monthlySeperationPay}</td>
-                      <td className="py-4 text-gray-700">{audSeperationPay}</td>
-                      <td className="py-4 text-gray-700">{audMonthlySeperationPay}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">13th Month Pay</td>
-                      <td className="py-4 text-gray-700">{thirteenthMonthPay}</td>
-                      <td className="py-4 text-gray-700">{monthlyThirteenthMonthlyPay}</td>
-                      <td className="py-4 text-gray-700">{audThirteenthMonthlyPay}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyThirteenthMonthlyPay}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Medical Insurance</td>
-                      <td className="py-4 text-gray-700">{medicalInsurance}</td>
-                      <td className="py-4 text-gray-700">{monthlyMedicalInsurance}</td>
-                      <td className="py-4 text-gray-700">{audMedicalInsurance}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyMedicalInsurance}</td>
-                    </tr>
-                    {additionalCost.map((item: any) => (
-                      <tr key={item.id}>
-                        <td className="py-4 text-gray-700">{item.name}</td>
-                        <td className="py-4 text-gray-700">{item.cost}</td>
-                        <td className="py-4 text-gray-700">{item.cost / 12}</td>
-                        <td className="py-4 text-gray-700">{(item.cost / (currency?.auCurrency ? currency.auCurrency : 0)).toFixed(2)}</td>
-                        <td className="py-4 text-gray-700">{((item.cost / ((currency?.auCurrency ? currency.auCurrency : 0))) / 12).toFixed(2)}</td>
-                      </tr>
-                    ))}
-                    <tr>
-                      <td className="py-4 text-gray-700">TOTAL</td>
-                      <td className="py-4 text-gray-700">{totalOtherFees}</td>
-                      <td className="py-4 text-gray-700">{totalMonthlytotalOtherFees}</td>
-                      <td className="py-4 text-gray-700">{totalAudtotalOtherFees}</td>
-                      <td className="py-4 text-gray-700">{totalAudMonthlytotalOtherFees}</td>
-                    </tr>
-                  </tbody>
+                      <thead>
+                        <tr>
+                          <th className="text-gray-700 font-bold uppercase py-2">Recruitment Fees</th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
+                          <th className="text-gray-700 font-bold uppercase py-2">{selectedCountry}  yearly</th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  Monthly</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-4 text-gray-700">Advertisement </td>
+                          <td className="py-4 text-gray-700">{advertisement}</td>
+                          <td className="py-4 text-gray-700">{monthlyAdvertisement}</td>
+                          <td className="py-4 text-gray-700">{audAdvertisement}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyAdvertisement}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Recruitment: </td>
+                          <td className="py-4 text-gray-700">{recruitment}</td>
+                          <td className="py-4 text-gray-700">{monthlyRecruitment}</td>
+                          <td className="py-4 text-gray-700">{audRecruitment}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyRecruitment}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">TOTAL </td>
+                          <td className="py-4 text-gray-700"> {totalRecruitmentAdvertisingFee} </td>
+                          <td className="py-4 text-gray-700">{totalMonthlyRecruitmentAdvertisingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudRecruitmentAdvertisingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudMonthlyRecruitmentAdvertisingFee}</td>
+                        </tr>
+                      </tbody>
+
+                      <thead>
+                        <tr>
+                          <th className="text-gray-700 font-bold uppercase py-2">Other Payments</th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  yearly</th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  Monthly</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-4 text-gray-700">Service Phone: </td>
+                          <td className="py-4 text-gray-700">{servicesPhone}</td>
+                          <td className="py-4 text-gray-700">{monthlyServicesPhone}</td>
+                          <td className="py-4 text-gray-700">{audServicesPhone}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyServicesPhone}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Computer Upgrade</td>
+                          <td className="py-4 text-gray-700">{computerUpgrade}</td>
+                          <td className="py-4 text-gray-700">{monthlyComputerUpgrade}</td>
+                          <td className="py-4 text-gray-700">{audComputerUpgrade}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyComputerUpgrade}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Opti Company Taxes </td>
+                          <td className="py-4 text-gray-700"> {optiCompTaxes} </td>
+                          <td className="py-4 text-gray-700">{monthyOptiComTaxes}</td>
+                          <td className="py-4 text-gray-700">{audOptiComTaxes}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyOptiComTaxes}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Seperation Pay</td>
+                          <td className="py-4 text-gray-700">{seperationPay}</td>
+                          <td className="py-4 text-gray-700">{monthlySeperationPay}</td>
+                          <td className="py-4 text-gray-700">{audSeperationPay}</td>
+                          <td className="py-4 text-gray-700">{audMonthlySeperationPay}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">13th Month Pay</td>
+                          <td className="py-4 text-gray-700">{thirteenthMonthPay}</td>
+                          <td className="py-4 text-gray-700">{monthlyThirteenthMonthlyPay}</td>
+                          <td className="py-4 text-gray-700">{audThirteenthMonthlyPay}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyThirteenthMonthlyPay}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Medical Insurance</td>
+                          <td className="py-4 text-gray-700">{medicalInsurance}</td>
+                          <td className="py-4 text-gray-700">{monthlyMedicalInsurance}</td>
+                          <td className="py-4 text-gray-700">{audMedicalInsurance}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyMedicalInsurance}</td>
+                        </tr>
+                        {additionalCost.map((item: any) => (
+                          <tr key={item.id}>
+                            <td className="py-4 text-gray-700">{item.name}</td>
+                            <td className="py-4 text-gray-700">{item.cost}</td>
+                            <td className="py-4 text-gray-700">{item.cost / 12}</td>
+                            <td className="py-4 text-gray-700">{(item.cost / toselectedCurrency).toFixed(2)}</td>
+                            <td className="py-4 text-gray-700">{((item.cost / toselectedCurrency) / 12).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td className="py-4 text-gray-700">TOTAL</td>
+                          <td className="py-4 text-gray-700">{totalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{totalMonthlytotalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{totalAudtotalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{totalAudMonthlytotalOtherFees}</td>
+                        </tr>
+                      </tbody>
 
 
-                  <thead>
-                    <tr>
-                      <th className="text-gray-700 font-bold uppercase py-2">Total Cost</th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
-                      <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD yearly</th>
-                      <th className="text-gray-700 font-bold uppercase py-2"> AUD Monthly</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-4 text-gray-700">Deposit: </td>
-                      <td className="py-4 text-gray-700">{depositCost}</td>
-                      <td className="py-4 text-gray-700">{monthlyDeposit}</td>
-                      <td className="py-4 text-gray-700">{audDeposit}</td>
-                      <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Seating Fees: </td>
-                      <td className="py-4 text-gray-700">{totalSeatingFee}</td>
-                      <td className="py-4 text-gray-700">{totalMonthlySeatingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudSeatingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudMonthlySeatingFee}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Salary</td>
-                      <td className="py-4 text-gray-700">{yearlySalary}</td>
-                      <td className="py-4 text-gray-700">{staffSalary}</td>
-                      <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
-                      <td className="py-4 text-gray-700">{audMonthlySalary}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Recruitment Fees </td>
-                      <td className="py-4 text-gray-700"> {totalRecruitmentAdvertisingFee} </td>
-                      <td className="py-4 text-gray-700">{totalMonthlyRecruitmentAdvertisingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudRecruitmentAdvertisingFee}</td>
-                      <td className="py-4 text-gray-700">{totalAudMonthlyRecruitmentAdvertisingFee}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700">Other Payments</td>
-                      <td className="py-4 text-gray-700">{totalOtherFees}</td>
-                      <td className="py-4 text-gray-700">{totalMonthlytotalOtherFees}</td>
-                      <td className="py-4 text-gray-700">{totalAudtotalOtherFees}</td>
-                      <td className="py-4 text-gray-700">{totalAudMonthlytotalOtherFees}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 text-gray-700 font-bold">Total</td>
-                      <td className="py-4 text-gray-700 font-bold">{totalYearlyCost}</td>
-                      <td className="py-4 text-gray-700 font-bold">{totalMonthlyCost}</td>
-                      <td className="py-4 text-gray-700 font-bold">{totalAudYearlyCost}</td>
-                      <td className="py-4 text-gray-700 font-bold">{totalAudMonthlyCost}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                      <thead>
+                        <tr>
+                          <th className="text-gray-700 font-bold uppercase py-2">Total Cost</th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP YEARLY </th>
+                          <th className="text-gray-700 font-bold uppercase py-2">PHP Monthly </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry} yearly</th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  Monthly</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-4 text-gray-700">Deposit: </td>
+                          <td className="py-4 text-gray-700">{depositCost}</td>
+                          <td className="py-4 text-gray-700">{monthlyDeposit}</td>
+                          <td className="py-4 text-gray-700">{audDeposit}</td>
+                          <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Seating Fees: </td>
+                          <td className="py-4 text-gray-700">{totalSeatingFee}</td>
+                          <td className="py-4 text-gray-700">{totalMonthlySeatingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudSeatingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudMonthlySeatingFee}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Salary</td>
+                          <td className="py-4 text-gray-700">{yearlySalary}</td>
+                          <td className="py-4 text-gray-700">{staffSalary}</td>
+                          <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
+                          <td className="py-4 text-gray-700">{audMonthlySalary}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Recruitment Fees </td>
+                          <td className="py-4 text-gray-700"> {totalRecruitmentAdvertisingFee} </td>
+                          <td className="py-4 text-gray-700">{totalMonthlyRecruitmentAdvertisingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudRecruitmentAdvertisingFee}</td>
+                          <td className="py-4 text-gray-700">{totalAudMonthlyRecruitmentAdvertisingFee}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700">Other Payments</td>
+                          <td className="py-4 text-gray-700">{totalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{totalMonthlytotalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{totalAudtotalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{totalAudMonthlytotalOtherFees}</td>
+                        </tr>
+                        <tr>
+                          <td className="py-4 text-gray-700 font-bold">Total</td>
+                          <td className="py-4 text-gray-700 font-bold">{totalYearlyCost}</td>
+                          <td className="py-4 text-gray-700 font-bold">{totalMonthlyCost}</td>
+                          <td className="py-4 text-gray-700 font-bold">{totalAudYearlyCost}</td>
+                          <td className="py-4 text-gray-700 font-bold">{totalAudMonthlyCost}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+              
               </div>
+              
+
             )
 
           }
+          
           {error && <p className="text-red-500">{error}</p>}
         </div>
       </div>

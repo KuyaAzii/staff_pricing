@@ -1,9 +1,14 @@
 import { ClientProfiles, PrismaClient } from '@prisma/client';
-import { NextResponse} from 'next/server';
+import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
-const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number, client: ClientProfiles) => {
+const calculateClientStaffCost = async (
+  gradeLevel: number,
+  staffSalary: number,
+  client: ClientProfiles,
+  selectedCurrency: string
+) => {
   try {
     const depositCost = await prisma.deposit.findFirst({
       where: {
@@ -14,13 +19,14 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
       }
     });
 
+
     const additionalCost = await prisma.additionalCost.findMany({
       where: { clientProfilesId: client.id },
       select: {
         cost: true,
         name: true
       }
-    })
+    });
 
     const seatingFees = await prisma.seatingFees.findFirst({
       where: {
@@ -60,16 +66,24 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
 
     const currency = await prisma.currency.findFirst({
       where: {
-        id: 1
+        country: selectedCurrency 
       },
       select: {
-        auCurrency: true
+        country: true,
+        currency: true
       }
+    });
 
-    })
+    if (!currency) {
+      throw new Error('Invalid currency selected');
+    }
 
-    const totalAdditionalCost = additionalCost.reduce((n, {cost}) => n + cost, 0)
+    console.log(gradeLevel);
 
+    const toselectedCurrency = currency.currency;
+    const selectedCountry = currency.country;
+
+    const totalAdditionalCost = additionalCost.reduce((n, {cost}) => n + cost, 0);
     const yearlySalary = (staffSalary * 12).toFixed(2);
 
     
@@ -95,25 +109,25 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
     // Total  cost
     const totalYearlyCost = (parseFloat(yearlySalary) + (depositCost?.deposit || 0) + parseFloat(totalSeatingFee) + parseFloat(totalRecruitmentAdvertisingFee) + parseFloat(totalOtherFees)).toFixed(2);
     const totalMonthlyCost = (parseFloat(totalYearlyCost) / 12).toFixed(2);
-    const totalAudYearlyCost = (parseFloat(totalYearlyCost) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudYearlyCost = (parseFloat(totalYearlyCost) / (toselectedCurrency || 0)).toFixed(2);
     const totalAudMonthlyCost = (parseFloat(totalAudYearlyCost) / 12).toFixed(2);
 
    
 
     // Total Seating Fees Cost
     const totalMonthlySeatingFee = (parseFloat(totalSeatingFee) / 12).toFixed(2);
-    const totalAudSeatingFee = (parseFloat(totalSeatingFee) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudSeatingFee = (parseFloat(totalSeatingFee) / (toselectedCurrency || 0)).toFixed(2);
     const totalAudMonthlySeatingFee = (parseFloat(totalAudSeatingFee) / 12).toFixed(2);
 
 
     // Total Others Payment
     const totalMonthlytotalOtherFees = (parseFloat(totalOtherFees) / 12).toFixed(2);
-    const totalAudtotalOtherFees = (parseFloat(totalOtherFees) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudtotalOtherFees = (parseFloat(totalOtherFees) / (toselectedCurrency || 0)).toFixed(2);
     const totalAudMonthlytotalOtherFees = (parseFloat(totalAudtotalOtherFees) / 12).toFixed(2);
 
     // Total Recuitment Fee Cost
     const totalMonthlyRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / 12).toFixed(2);
-    const totalAudRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / (currency?.auCurrency || 0)).toFixed(2);
+    const totalAudRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / (toselectedCurrency || 0)).toFixed(2);
     const totalAudMonthlyRecruitmentAdvertisingFee = (parseFloat(totalAudRecruitmentAdvertisingFee) / 12).toFixed(2);
 
 
@@ -137,29 +151,29 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
 
     // AUD Yearly
   
-    const audWorkstation = ((seatingFees?.workstation || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audUtilitiesAmenities = ((seatingFees?.utilitiesAmenities || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audItSupportHr = ((seatingFees?.itSupportHr || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audAccountingPayRoll = ((seatingFees?.accountingPayRoll || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audWorkstation = ((seatingFees?.workstation || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audUtilitiesAmenities = ((seatingFees?.utilitiesAmenities || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audItSupportHr = ((seatingFees?.itSupportHr || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audAccountingPayRoll = ((seatingFees?.accountingPayRoll || 0) / (toselectedCurrency || 0)).toFixed(2);
 
-    const audRecruitment = ((recruitmentFees?.recruitment || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audAdvertisement = ((recruitmentFees?.advertisement || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audRecruitment = ((recruitmentFees?.recruitment || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audAdvertisement = ((recruitmentFees?.advertisement || 0) / (toselectedCurrency || 0)).toFixed(2);
 
-    const audServicesPhone = ((otherFees?.servicesPhone || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audComputerUpgrade = ((otherFees?.computerUpgrade || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audOptiComTaxes = ((otherFees?.optiCompTaxes || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audThirteenthMonthlyPay = ((otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audSeperationPay = ((otherFees?.seperationPayId ? staffSalary : staffSalary || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audMedicalInsurance = ((otherFees?.medicalInsurance || 0) / (currency?.auCurrency || 0)).toFixed(2);
+    const audServicesPhone = ((otherFees?.servicesPhone || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audComputerUpgrade = ((otherFees?.computerUpgrade || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audOptiComTaxes = ((otherFees?.optiCompTaxes || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audThirteenthMonthlyPay = ((otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audSeperationPay = ((otherFees?.seperationPayId ? staffSalary : staffSalary || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audMedicalInsurance = ((otherFees?.medicalInsurance || 0) / (toselectedCurrency || 0)).toFixed(2);
 
 
 
     // AUD total Yearly
-    const audTotalYearlySalary = (parseFloat(yearlySalary) / (currency?.auCurrency || 0)).toFixed(2);
-    const audDeposit = ((depositCost?.deposit || 0) / (currency?.auCurrency || 0)).toFixed(2);
-    const audTotalSeatingFee = (parseFloat(totalSeatingFee) / (currency?.auCurrency || 0)).toFixed(2);
-    const audtotalRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / (currency?.auCurrency || 0)).toFixed(2);
-    const audtotalOtherFees = (parseFloat(totalOtherFees) / (currency?.auCurrency || 0)).toFixed(2);
+    const audTotalYearlySalary = (parseFloat(yearlySalary) / (toselectedCurrency || 0)).toFixed(2);
+    const audDeposit = ((depositCost?.deposit || 0) / (toselectedCurrency || 0)).toFixed(2);
+    const audTotalSeatingFee = (parseFloat(totalSeatingFee) / (toselectedCurrency || 0)).toFixed(2);
+    const audtotalRecruitmentAdvertisingFee = (parseFloat(totalRecruitmentAdvertisingFee) / (toselectedCurrency || 0)).toFixed(2);
+    const audtotalOtherFees = (parseFloat(totalOtherFees) / (toselectedCurrency || 0)).toFixed(2);
 
     //AUD Monthly
     const audMonthlyDeposit = (parseFloat(audDeposit) / 12).toFixed(2);
@@ -273,8 +287,11 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
       audMonthlyMedicalInsurance,
 
       additionalCost,
-      currency,
-      client
+      toselectedCurrency,
+      client,
+      selectedCountry
+      
+     
     };
 
 
@@ -288,17 +305,15 @@ const calculateClientStaffCost = async (gradeLevel: number, staffSalary: number,
 
 
 export async function GET(req: Request) {
-
   try {
-    const [grades, staffPosition, staffSalary] = await Promise.all([
+    const [grades, staffPosition, staffSalary, currency] = await Promise.all([
       prisma.staffCategory.findMany(),
       prisma.positionsCategory.findMany(),
       prisma.salaryCategory.findMany(),
+      prisma.currency.findMany(),
     ]);
 
-
-
-    return NextResponse.json({ data: { grades, staffPosition, staffSalary }, message: "successfully!" }, { status: 200 });
+    return NextResponse.json({ data: { grades, staffPosition, staffSalary, currency }, message: "successfully!" }, { status: 200 });
   } catch (error) {
     console.error('Error fetching grade levels:', error);
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
@@ -307,9 +322,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { name, company, contactNumber, email, address, position, grade, salary, additionalCost } = body;
+  const { name, company, contactNumber, email, address, position, grade, salary, currency, additionalCost } = body;
   try {
-
     const existingClient = await prisma.clientProfiles.findFirst({
       where: {
         email: email
@@ -324,9 +338,7 @@ export async function POST(req: Request) {
       where: {
         staffSalary: parseFloat(salary)
       }
-
     });
-    console.log('Provided salary:', salary);
     if (!salaryCategory) {
       throw new Error('Invalid staff salary provided');
     }
@@ -336,7 +348,6 @@ export async function POST(req: Request) {
         id: parseInt(grade)
       }
     });
-
     if (!staffCategory) {
       throw new Error('Invalid grade level provided');
     }
@@ -346,12 +357,19 @@ export async function POST(req: Request) {
         staffPosition: position
       }
     });
-
     if (!positionCategory) {
       throw new Error('Invalid staff position provided');
     }
 
-    // newly created client
+    const selectedCurrency = await prisma.currency.findFirst({
+      where: {
+        currency: currency
+      }
+    });
+    if (!selectedCurrency) {
+      throw new Error('Invalid currency provided');
+    }
+
     const client = await prisma.clientProfiles.create({
       data: {
         name,
@@ -365,8 +383,6 @@ export async function POST(req: Request) {
       }
     });
 
-    //   // TODO: create othercost with the od of newly created client
-
     await Promise.all(JSON.parse(additionalCost).map(async (item: any) => {
       try {
         const newAdditionalCost = await prisma.additionalCost.create({
@@ -375,7 +391,6 @@ export async function POST(req: Request) {
             cost: parseFloat(item.cost),
             ClientProfiles: { connect: { id: client.id } }
           },
-
         });
         console.log("Additional cost created:", newAdditionalCost);
       } catch (error) {
@@ -383,7 +398,7 @@ export async function POST(req: Request) {
       }
     }));
 
-    const costs = await calculateClientStaffCost(staffCategory.id, parseFloat(salary), client);
+    const costs = await calculateClientStaffCost(staffCategory.id, parseFloat(salary), client, selectedCurrency?.country);
 
     return NextResponse.json({ data: costs, message: "User created successfully!" }, { status: 201 });
   } catch (error) {
