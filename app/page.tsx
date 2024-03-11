@@ -1,18 +1,18 @@
-// pages/index.tsx
-
 import dynamic from 'next/dynamic';
-
-
-import '../app/globals.css';
+import RequireAuth from '../components/RequireAuth';
 
 const Login = dynamic(() => import('../components/Login'), { ssr: false });
 
-export default function Home() {
+const Home = () => {
+  const isAuthenticated = false; // Change this to true for authenticated users
+
   return (
-
+    <RequireAuth isAuthenticated={isAuthenticated} redirectTo="/login">
       <div>
-     <Login/> 
+        <Login />
       </div>
-
+    </RequireAuth>
   );
-}
+};
+
+export default Home;

@@ -15,10 +15,35 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ message: 'Invalid ID parameter' }, { status: 400 });
       }
 
-      await prisma.clientProfiles.delete({
-        where: {
-          id: id,
+      const clientProfile = await prisma.clientProfiles.findUnique({
+        where: { id: id },
+        include: {
+          ourPdf: true,
+          clientPdf: true,
         },
+      });
+
+      if (!clientProfile) {
+        return NextResponse.json({ message: 'Client profile not found' }, { status: 404 });
+      }
+
+      
+      if (clientProfile.ourPdf && clientProfile.ourPdf.length > 0) {
+        await prisma.ourPdf.deleteMany({
+          where: { ourPdfClientProfilesId: id },
+        });
+      }
+
+    
+      if (clientProfile.clientPdf && clientProfile.clientPdf.length > 0) {
+        await prisma.clientPdf.deleteMany({
+          where: { clientPdfClientProfilesId: id },
+        });
+      }
+
+     
+      await prisma.clientProfiles.delete({
+        where: { id: id },
       });
 
       return NextResponse.json({ message: "User deleted successfully!" }, { status: 200 });

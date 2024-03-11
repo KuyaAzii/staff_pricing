@@ -34,15 +34,87 @@ const Lists = () => {
     setCurrentPage(1); 
   };
 
-  const handleDownload = (id: number) => {
-    // Implement download action
-    console.log(`Download data with ID ${id}`);
-  };
+  async function handleViewPDF(id: number) {
+    if (!id || typeof id !== 'number') {
+      throw new Error('Invalid Client ID. Please provide a valid number.');
+    }
+  
+    const jsonData = { id }; 
+  
+    try {
+      const response = await fetch('/api/view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'API request failed');
+      }
+  
+      const blob = await response.blob(); 
+  
+      if (!blob) {
+        throw new Error('Empty PDF response received');
+      }
+  
+      
+      const url = URL.createObjectURL(blob); 
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `our-pdf-${id}.pdf`; 
+      link.click(); 
+  
 
-  const handleViewPDF = (id: number) => {
-    // Implement view in PDF action
-    console.log(`View data in PDF with ID ${id}`);
-  };
+  
+    } catch (error) {
+      console.error('Error fetching PDF:');
+      
+    }
+  }
+
+  async function handleSecondViewPDF(id: number) {
+    if (!id || typeof id !== 'number') {
+      throw new Error('Invalid Client ID. Please provide a valid number.');
+    }
+  
+    const jsonData = { id }; 
+  
+    try {
+      const response = await fetch('/api/secondview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'API request failed');
+      }
+  
+      const blob = await response.blob(); 
+  
+      if (!blob) {
+        throw new Error('Empty PDF response received');
+      }
+  
+      
+      const url = URL.createObjectURL(blob); 
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `client-pdf-${id}.pdf`; 
+      link.click(); 
+  
+
+  
+    } catch (error) {
+      console.error('Error fetching PDF:');
+      
+    }
+  }
+  
+  
 
   const handleDelete = async (id: number) => {
     try {
@@ -87,10 +159,10 @@ const Lists = () => {
                 <select
                   onChange={(e) => {
                     const selectedAction = e.target.value;
-                    if (selectedAction === 'download') {
-                      handleDownload(client.id);
-                    } else if (selectedAction === 'viewPDF') {
+                    if (selectedAction === 'OurPDF') {
                       handleViewPDF(client.id);
+                    } else if (selectedAction === 'ClientPDF') {
+                      handleSecondViewPDF(client.id);
                     } else if (selectedAction === 'delete') {
                       handleDelete(client.id);
                     }
@@ -98,8 +170,8 @@ const Lists = () => {
                   className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline"
                 >
                   <option value="default">Select Action</option>
-                  <option value="download">Download</option>
-                  <option value="viewPDF">View</option>
+                  <option value="OurPDF">Download Our PDF</option>
+                  <option value="ClientPDF">Download Client PDF</option>
                   <option value="delete">Delete</option>
                 </select>
               </td>

@@ -1,11 +1,70 @@
 //compunents/CreateNew.tsx
 "use client";
 import { PositionsCategory, StaffCategory, SalaryCategory, Currency, ClientProfiles } from '@prisma/client';
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import numeral from 'numeral';
 import DynamicInputFields from './InputField';
+import { useReactToPrint } from 'react-to-print';
+
+numeral.defaultFormat('0,0.00');
 
 const CreateNew = () => {
+  const employeeDataRef = useRef<HTMLDivElement>(null);
+  const clientDataRef = useRef<HTMLDivElement>(null);
 
+  const handlePrintEmployeeData = useReactToPrint({
+    content: () => employeeDataRef.current,
+    documentTitle: 'Employee Data',
+    onAfterPrint: () => alert('Print Success for Employee Data'),
+  });
+
+  const handlePrintClientData = useReactToPrint({
+    content: () => clientDataRef.current,
+    documentTitle: 'Client Data',
+    onAfterPrint: () => alert('Print Success for Client Data'),
+  });
+
+  const savePdf = async () => {
+    try {
+      const employeeData = employeeDataRef.current?.outerHTML;
+      const clientData = clientDataRef.current?.outerHTML;
+  
+      if (!employeeData || !clientData) {
+        throw new Error('Failed to retrieve component content');
+      }
+  
+      const data = {
+        ourContent: employeeData,
+        clientContent: clientData,
+      };
+  
+      console.log('Sending data to API:', data); // Log data for debugging
+  
+      const response = await fetch('/api/pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to save PDF');
+      }
+  
+      // Use a different variable name to store the response data
+      const responseData = await response.json();
+      alert('PDF saved successfully!');
+  
+      console.log('Employee PDF URL:', responseData.ourPdf?.url);
+      console.log('Client PDF URL:', responseData.ourPdf?.url);
+    } catch (error) {
+      console.error('Error saving PDF:', error);
+      // Handle the error appropriately, such as displaying an error message to the user
+    }
+  };
+  
+  const [loading, setLoading] = useState(false);
   const [totalYearlyCost, setTotalYearlyCost] = useState<number | null>(null);
   const [depositCost, setDepositCost] = useState<number | null>(null);
   const [totalSeatingFee, setTotalSeatingFee] = useState<number | null>(null);
@@ -103,7 +162,6 @@ const CreateNew = () => {
   const [audMonthlySeperationPay, setAudMonthlySeperationPay] = useState<number | null>(null);
   const [audMonthlyMedicalInsurance, setAudMonthlyMedicalInsurance] = useState<number | null>(null);
   const [additionalCost, setAdditionalCost] = useState([])
-  const [currency, setCurreny] = useState<Currency>()
   const [client, setClient] = useState<ClientProfiles>()
  
 
@@ -176,7 +234,11 @@ const CreateNew = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     setError(null);
+    
+    
+  
     try {
       const response = await fetch('/api/createnew', {
         method: 'POST',
@@ -191,7 +253,9 @@ const CreateNew = () => {
           currency : selectedCurrency,
           additionalCost: JSON.stringify(inputFields)
         }),
+        
       });
+      
       const responseData = await response.json();
       if (response.ok) {
         console.log('successful');
@@ -283,8 +347,8 @@ const CreateNew = () => {
         setAudMonthlySeperationPay(responseData.data.audMonthlySeperationPay);
         setAudMonthlyMedicalInsurance(responseData.data.audMonthlyMedicalInsurance);
         setAdditionalCost(responseData.data.additionalCost);
-        setCurreny(responseData.data.toselectedCurrency);
         setClient(responseData.data.client);
+        
       } else {
         setError(responseData.message || 'Input Failed. Please check your Input');
         console.error('Input Failed:', responseData.message || 'Unknown error');
@@ -294,13 +358,10 @@ const CreateNew = () => {
       console.error('Unexpected error during computation Error:', error);
 
     }
+    
   };
-  const numberWithCommas = (number: { toLocaleString: (arg0: string, arg1: { minimumFractionDigits: number; maximumFractionDigits: number; }) => any; }) => {
-    return number.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
+
+
 
   return (
     <div className="max-w mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -308,7 +369,8 @@ const CreateNew = () => {
         <div className=" w-1/4  mr-5">
           <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md">
             <h1 className="text-2xl font-bold mb-4">New Staff Price</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4"
+             >
               <div>
                 <label className="block text-sm font-medium text-gray-700">Client Name</label>
                 <input
@@ -395,7 +457,7 @@ const CreateNew = () => {
                 ))}
               </select>
             </div>
-              <div>
+              <div className ="max-w-screen-md mx-auto">
                 <DynamicInputFields
                   inputFields={inputFields} setInputFields={setInputFields}
                 />
@@ -404,8 +466,10 @@ const CreateNew = () => {
               <button
                 type="submit"
                 className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 focus:outline-none focus:shadow-outline"
-              >
-                Calculate
+                disabled={loading}
+             >
+               {loading ? 'Calculating...' : 'Calculate'}
+                
               </button>
             </form>
           </div>
@@ -505,7 +569,27 @@ const CreateNew = () => {
             !error &&
             (
               <div  className="w-3/4 mx-auto bg-white rounded-lg shadow-lg px-8 py-10" >
-              <div className="mx-auto bg-white rounded-lg shadow-lg px-8 py-10 mb-10">
+                <button 
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 ml-5 rounded focus:outline-none focus:shadow-outline " 
+                onClick={ handlePrintEmployeeData}
+              >
+                Print Our Copy
+              </button>
+
+              <button 
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4  ml-5 rounded focus:outline-none focus:shadow-outline" 
+                  onClick={handlePrintClientData}
+                >
+                  Print Client Copy
+                </button>
+
+                <button
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 ml-5 rounded focus:outline-none focus:shadow-outline"
+                onClick={savePdf}
+              >
+                Save PDF
+              </button>
+              <div ref={clientDataRef} className="mx-auto bg-white rounded-lg shadow-lg px-8 py-10 mb-10">
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -542,17 +626,16 @@ const CreateNew = () => {
                 <tbody>
                   <tr>
                     <td className="py-4 text-gray-700 font-bold">Total</td>
-                    <td className="py-4 text-gray-700 font-bold">{numberWithCommas(totalYearlyCost)}</td>
-                    <td className="py-4 text-gray-700 font-bold">{totalMonthlyCost}</td>
-                    <td className="py-4 text-gray-700 font-bold">{totalAudYearlyCost}</td>
-                    <td className="py-4 text-gray-700 font-bold">{totalAudMonthlyCost}</td>
+                    <td className="py-4 text-gray-700 font-bold">{numeral(totalYearlyCost).format()}</td>
+                    <td className="py-4 text-gray-700 font-bold">{numeral(totalMonthlyCost).format()}</td>
+                    <td className="py-4 text-gray-700 font-bold">{numeral(totalAudYearlyCost).format()}</td>
+                    <td className="py-4 text-gray-700 font-bold">{numeral(totalAudMonthlyCost).format()}</td>
                   </tr>
                 </tbody>
               </table>
-
             </div>
 
-              <div className="mx-auto bg-white rounded-lg shadow-lg px-8 py-10">
+              <div ref={employeeDataRef} className="mx-auto bg-white rounded-lg shadow-lg px-8 py-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <img
@@ -575,7 +658,16 @@ const CreateNew = () => {
                       <div className="text-gray-700">Email: {client?.email}</div>
 
                     </div>
-                    <table className="w-full text-left mb-8">
+                    <table className="w-full text-left mb-5">
+                    <thead>
+                        <tr>
+                          <th className="text-gray-700 font-bold uppercase py-2"></th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> </th>
+                          <th className="text-gray-700 font-bold uppercase py-2"> </th>
+                        </tr>
+                      </thead>
                       <thead>
                         <tr>
                           <th className="text-gray-700 font-bold uppercase py-2">DEPOSIT</th>
@@ -586,20 +678,20 @@ const CreateNew = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td className="py-4 text-gray-700">Deposit: </td>
-                          <td className="py-4 text-gray-700">{depositCost}</td>
-                          <td className="py-4 text-gray-700">{monthlyDeposit}</td>
-                          <td className="py-4 text-gray-700">{audDeposit}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
-                        </tr>
-                        <tr>
-                          <td className="py-4 text-gray-700">TOTAL: </td>
-                          <td className="py-4 text-gray-700">{depositCost}</td>
-                          <td className="py-4 text-gray-700">{monthlyDeposit}</td>
-                          <td className="py-4 text-gray-700">{audDeposit}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
-                        </tr>
+                      <tr>
+                        <td className="py-4 text-gray-700">Deposit: </td>
+                        <td className="py-4 text-gray-700">{numeral(depositCost).format()}</td>
+                        <td className="py-4 text-gray-700">{numeral(monthlyDeposit).format()}</td>
+                        <td className="py-4 text-gray-700">{numeral(audDeposit).format()}</td>
+                        <td className="py-4 text-gray-700">{numeral(audMonthlyDeposit).format()}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-4 text-gray-700">TOTAL: </td>
+                        <td className="py-4 text-gray-700">{numeral(depositCost).format()}</td>
+                        <td className="py-4 text-gray-700">{numeral(monthlyDeposit).format()}</td>
+                        <td className="py-4 text-gray-700">{numeral(audDeposit).format()}</td>
+                        <td className="py-4 text-gray-700">{numeral(audMonthlyDeposit).format()}</td>
+                      </tr>
                       </tbody>
 
                       <thead>
@@ -614,38 +706,38 @@ const CreateNew = () => {
                       <tbody>
                         <tr>
                           <td className="py-4 text-gray-700">WorkStation: </td>
-                          <td className="py-4 text-gray-700">{workStation}</td>
-                          <td className="py-4 text-gray-700">{monthlyWorkstation}</td>
-                          <td className="py-4 text-gray-700">{audWorkstation}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyWorkstation}</td>
+                          <td className="py-4 text-gray-700">{numeral(workStation).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyWorkstation).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audWorkstation).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyWorkstation).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Utilities & Amenities</td>
-                          <td className="py-4 text-gray-700">{utilitiesAmenities}</td>
-                          <td className="py-4 text-gray-700">{monthlyUtilitiesAmenities}</td>
-                          <td className="py-4 text-gray-700">{audUtilitiesAmenities}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyUtilitiesAmenities}</td>
+                          <td className="py-4 text-gray-700">{numeral(utilitiesAmenities).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyUtilitiesAmenities).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audUtilitiesAmenities).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyUtilitiesAmenities).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">IT Support, HR </td>
-                          <td className="py-4 text-gray-700"> {itSupportHr} </td>
-                          <td className="py-4 text-gray-700">{monthlyItSupportHr}</td>
-                          <td className="py-4 text-gray-700">{audItSupportHr}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyItSupportHr}</td>
+                          <td className="py-4 text-gray-700"> {numeral(itSupportHr).format()} </td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyItSupportHr).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audItSupportHr).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyItSupportHr).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Accounting & Pay Roll</td>
-                          <td className="py-4 text-gray-700">{accountingPayRoll}</td>
-                          <td className="py-4 text-gray-700">{monthlyAccountingPayRoll}</td>
-                          <td className="py-4 text-gray-700">{audAccountingPayRoll}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyAccountingPayRoll}</td>
+                          <td className="py-4 text-gray-700">{numeral(accountingPayRoll).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyAccountingPayRoll).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audAccountingPayRoll).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyAccountingPayRoll).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Total</td>
-                          <td className="py-4 text-gray-700">{totalSeatingFee}</td>
-                          <td className="py-4 text-gray-700">{totalMonthlySeatingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudSeatingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudMonthlySeatingFee}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalSeatingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalMonthlySeatingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudSeatingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudMonthlySeatingFee).format()}</td>
                         </tr>
                       </tbody>
 
@@ -661,20 +753,21 @@ const CreateNew = () => {
                       <tbody>
                         <tr>
                           <td className="py-4 text-gray-700">Salary: </td>
-                          <td className="py-4 text-gray-700">{yearlySalary}</td>
-                          <td className="py-4 text-gray-700">{staffSalary}</td>
-                          <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
-                          <td className="py-4 text-gray-700">{audMonthlySalary}</td>
+                          <td className="py-4 text-gray-700">{numeral(yearlySalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(staffSalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audTotalYearlySalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlySalary).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">TOTAL: </td>
-                          <td className="py-4 text-gray-700">{yearlySalary}</td>
-                          <td className="py-4 text-gray-700">{staffSalary}</td>
-                          <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
-                          <td className="py-4 text-gray-700">{audMonthlySalary}</td>
+                          <td className="py-4 text-gray-700">{numeral(yearlySalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(staffSalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audTotalYearlySalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlySalary).format()}</td>
                         </tr>
                       </tbody>
-
+                      <td className="py-4 text-gray-700"> </td>
+                      <td className="py-4 text-gray-700"> </td>
                       <thead>
                         <tr>
                           <th className="text-gray-700 font-bold uppercase py-2">Recruitment Fees</th>
@@ -684,27 +777,28 @@ const CreateNew = () => {
                           <th className="text-gray-700 font-bold uppercase py-2"> {selectedCountry}  Monthly</th>
                         </tr>
                       </thead>
+                      
                       <tbody>
                         <tr>
                           <td className="py-4 text-gray-700">Advertisement </td>
-                          <td className="py-4 text-gray-700">{advertisement}</td>
-                          <td className="py-4 text-gray-700">{monthlyAdvertisement}</td>
-                          <td className="py-4 text-gray-700">{audAdvertisement}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyAdvertisement}</td>
+                          <td className="py-4 text-gray-700">{numeral(advertisement).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyAdvertisement).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audAdvertisement).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyAdvertisement).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Recruitment: </td>
-                          <td className="py-4 text-gray-700">{recruitment}</td>
-                          <td className="py-4 text-gray-700">{monthlyRecruitment}</td>
-                          <td className="py-4 text-gray-700">{audRecruitment}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyRecruitment}</td>
+                          <td className="py-4 text-gray-700">{numeral(recruitment).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyRecruitment).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audRecruitment).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyRecruitment).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">TOTAL </td>
-                          <td className="py-4 text-gray-700"> {totalRecruitmentAdvertisingFee} </td>
-                          <td className="py-4 text-gray-700">{totalMonthlyRecruitmentAdvertisingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudRecruitmentAdvertisingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudMonthlyRecruitmentAdvertisingFee}</td>
+                          <td className="py-4 text-gray-700"> {numeral(totalRecruitmentAdvertisingFee).format()} </td>
+                          <td className="py-4 text-gray-700">{numeral(totalMonthlyRecruitmentAdvertisingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudRecruitmentAdvertisingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudMonthlyRecruitmentAdvertisingFee).format()}</td>
                         </tr>
                       </tbody>
 
@@ -720,61 +814,61 @@ const CreateNew = () => {
                       <tbody>
                         <tr>
                           <td className="py-4 text-gray-700">Service Phone: </td>
-                          <td className="py-4 text-gray-700">{servicesPhone}</td>
-                          <td className="py-4 text-gray-700">{monthlyServicesPhone}</td>
-                          <td className="py-4 text-gray-700">{audServicesPhone}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyServicesPhone}</td>
+                          <td className="py-4 text-gray-700">{numeral(servicesPhone).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyServicesPhone).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audServicesPhone).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyServicesPhone).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Computer Upgrade</td>
-                          <td className="py-4 text-gray-700">{computerUpgrade}</td>
-                          <td className="py-4 text-gray-700">{monthlyComputerUpgrade}</td>
-                          <td className="py-4 text-gray-700">{audComputerUpgrade}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyComputerUpgrade}</td>
+                          <td className="py-4 text-gray-700">{numeral(computerUpgrade).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyComputerUpgrade).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audComputerUpgrade).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyComputerUpgrade).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Opti Company Taxes </td>
-                          <td className="py-4 text-gray-700"> {optiCompTaxes} </td>
-                          <td className="py-4 text-gray-700">{monthyOptiComTaxes}</td>
-                          <td className="py-4 text-gray-700">{audOptiComTaxes}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyOptiComTaxes}</td>
+                          <td className="py-4 text-gray-700"> {numeral(optiCompTaxes).format()} </td>
+                          <td className="py-4 text-gray-700">{numeral(monthyOptiComTaxes).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audOptiComTaxes).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyOptiComTaxes).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Seperation Pay</td>
-                          <td className="py-4 text-gray-700">{seperationPay}</td>
-                          <td className="py-4 text-gray-700">{monthlySeperationPay}</td>
-                          <td className="py-4 text-gray-700">{audSeperationPay}</td>
-                          <td className="py-4 text-gray-700">{audMonthlySeperationPay}</td>
+                          <td className="py-4 text-gray-700">{numeral(seperationPay).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlySeperationPay).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audSeperationPay).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlySeperationPay).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">13th Month Pay</td>
-                          <td className="py-4 text-gray-700">{thirteenthMonthPay}</td>
-                          <td className="py-4 text-gray-700">{monthlyThirteenthMonthlyPay}</td>
-                          <td className="py-4 text-gray-700">{audThirteenthMonthlyPay}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyThirteenthMonthlyPay}</td>
+                          <td className="py-4 text-gray-700">{numeral(thirteenthMonthPay).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyThirteenthMonthlyPay).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audThirteenthMonthlyPay).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyThirteenthMonthlyPay).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Medical Insurance</td>
-                          <td className="py-4 text-gray-700">{medicalInsurance}</td>
-                          <td className="py-4 text-gray-700">{monthlyMedicalInsurance}</td>
-                          <td className="py-4 text-gray-700">{audMedicalInsurance}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyMedicalInsurance}</td>
+                          <td className="py-4 text-gray-700">{numeral(medicalInsurance).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyMedicalInsurance).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMedicalInsurance).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyMedicalInsurance).format()}</td>
                         </tr>
                         {additionalCost.map((item: any) => (
                           <tr key={item.id}>
                             <td className="py-4 text-gray-700">{item.name}</td>
-                            <td className="py-4 text-gray-700">{item.cost}</td>
-                            <td className="py-4 text-gray-700">{item.cost / 12}</td>
-                            <td className="py-4 text-gray-700">{(item.cost / toselectedCurrency).toFixed(2)}</td>
-                            <td className="py-4 text-gray-700">{((item.cost / toselectedCurrency) / 12).toFixed(2)}</td>
+                            <td className="py-4 text-gray-700">{numeral(item.cost).format()}</td>
+                            <td className="py-4 text-gray-700">{numeral(item.cost / 12).format()}</td>
+                            <td className="py-4 text-gray-700">{numeral((item.cost / toselectedCurrency).toFixed(2)).format()}</td>
+                            <td className="py-4 text-gray-700">{numeral(((item.cost / toselectedCurrency) / 12).toFixed(2)).format()}</td>
                           </tr>
                         ))}
                         <tr>
                           <td className="py-4 text-gray-700">TOTAL</td>
-                          <td className="py-4 text-gray-700">{totalOtherFees}</td>
-                          <td className="py-4 text-gray-700">{totalMonthlytotalOtherFees}</td>
-                          <td className="py-4 text-gray-700">{totalAudtotalOtherFees}</td>
-                          <td className="py-4 text-gray-700">{totalAudMonthlytotalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalOtherFees).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalMonthlytotalOtherFees).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudtotalOtherFees).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudMonthlytotalOtherFees).format()}</td>
                         </tr>
                       </tbody>
 
@@ -791,51 +885,51 @@ const CreateNew = () => {
                       <tbody>
                         <tr>
                           <td className="py-4 text-gray-700">Deposit: </td>
-                          <td className="py-4 text-gray-700">{depositCost}</td>
-                          <td className="py-4 text-gray-700">{monthlyDeposit}</td>
-                          <td className="py-4 text-gray-700">{audDeposit}</td>
-                          <td className="py-4 text-gray-700">{audMonthlyDeposit}</td>
+                          <td className="py-4 text-gray-700">{numeral(depositCost).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(monthlyDeposit).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audDeposit).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlyDeposit).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Seating Fees: </td>
-                          <td className="py-4 text-gray-700">{totalSeatingFee}</td>
-                          <td className="py-4 text-gray-700">{totalMonthlySeatingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudSeatingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudMonthlySeatingFee}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalSeatingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalMonthlySeatingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudSeatingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudMonthlySeatingFee).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Salary</td>
-                          <td className="py-4 text-gray-700">{yearlySalary}</td>
-                          <td className="py-4 text-gray-700">{staffSalary}</td>
-                          <td className="py-4 text-gray-700">{audTotalYearlySalary}</td>
-                          <td className="py-4 text-gray-700">{audMonthlySalary}</td>
+                          <td className="py-4 text-gray-700">{numeral(yearlySalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(staffSalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audTotalYearlySalary).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(audMonthlySalary).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Recruitment Fees </td>
-                          <td className="py-4 text-gray-700"> {totalRecruitmentAdvertisingFee} </td>
-                          <td className="py-4 text-gray-700">{totalMonthlyRecruitmentAdvertisingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudRecruitmentAdvertisingFee}</td>
-                          <td className="py-4 text-gray-700">{totalAudMonthlyRecruitmentAdvertisingFee}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalRecruitmentAdvertisingFee).format()} </td>
+                          <td className="py-4 text-gray-700">{numeral(totalMonthlyRecruitmentAdvertisingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudRecruitmentAdvertisingFee).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudMonthlyRecruitmentAdvertisingFee).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700">Other Payments</td>
-                          <td className="py-4 text-gray-700">{totalOtherFees}</td>
-                          <td className="py-4 text-gray-700">{totalMonthlytotalOtherFees}</td>
-                          <td className="py-4 text-gray-700">{totalAudtotalOtherFees}</td>
-                          <td className="py-4 text-gray-700">{totalAudMonthlytotalOtherFees}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalOtherFees).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalMonthlytotalOtherFees).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudtotalOtherFees).format()}</td>
+                          <td className="py-4 text-gray-700">{numeral(totalAudMonthlytotalOtherFees).format()}</td>
                         </tr>
                         <tr>
                           <td className="py-4 text-gray-700 font-bold">Total</td>
-                          <td className="py-4 text-gray-700 font-bold">{totalYearlyCost}</td>
-                          <td className="py-4 text-gray-700 font-bold">{totalMonthlyCost}</td>
-                          <td className="py-4 text-gray-700 font-bold">{totalAudYearlyCost}</td>
-                          <td className="py-4 text-gray-700 font-bold">{totalAudMonthlyCost}</td>
+                          <td className="py-4 text-gray-700 font-bold">{numeral(totalYearlyCost).format()}</td>
+                          <td className="py-4 text-gray-700 font-bold">{numeral(totalMonthlyCost).format()}</td>
+                          <td className="py-4 text-gray-700 font-bold">{numeral(totalAudYearlyCost).format()}</td>
+                          <td className="py-4 text-gray-700 font-bold">{numeral(totalAudMonthlyCost).format()}</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-              
               </div>
+
               
 
             )
@@ -843,7 +937,7 @@ const CreateNew = () => {
           }
           
           {error && <p className="text-red-500">{error}</p>}
-        </div>
+        </div >
       </div>
     </div>
   );

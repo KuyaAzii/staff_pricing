@@ -324,14 +324,6 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { name, company, contactNumber, email, address, position, grade, salary, currency, additionalCost } = body;
   try {
-    const existingClient = await prisma.clientProfiles.findFirst({
-      where: {
-        email: email
-      }
-    });
-    if (existingClient) {
-      return NextResponse.json({ message: "Email is already in use." }, { status: 400 });
-    }
 
     const parsedContact = parseInt(contactNumber);
     const salaryCategory = await prisma.salaryCategory.findFirst({

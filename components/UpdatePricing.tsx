@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Deposit, SeatingFees, RecruitmentFees, OtherPayments, Currency } from '@prisma/client';
 import EditForm from './EditForm';
 import Button from './Button';
+import numeral from 'numeral';
 
+numeral.defaultFormat('0,0.00');
 const UpdatePricePage: React.FC = () => {
   const [existingDeposit, setExistingDeposit] = useState<Deposit[]>([]);
   const [existingSeatingFees, setExistingSeatingFees] = useState<SeatingFees[]>([]);
@@ -181,7 +183,7 @@ const UpdatePricePage: React.FC = () => {
   }
 
   return (
-    <div className="p-5 h-screen bg-gray-100">
+    <div className="p-5 full-screen bg-white">
       <h1 className="text-2xl font-bold mb-8">Update Price</h1>
       <div className="overflow-auto rounded-lg shadow hidden md:block">
         <div className="mb-8">
@@ -200,7 +202,7 @@ const UpdatePricePage: React.FC = () => {
                 <tr className="bg-white" key={`deposit-${deposit.id}`}>
                   <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">{deposit.id}</td>
                   <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{deposit.staffCategoryId}</td>
-                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{deposit.deposit}</td>
+                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(deposit.deposit).format()}</td>
                   <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">
                     {editedDepositId === deposit.id ? (
                       <EditForm
@@ -239,10 +241,10 @@ const UpdatePricePage: React.FC = () => {
                 <tr className="bg-white" key={`seatingfee-${seatingFee.id}`}>
                   <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">{seatingFee.id}</td>
                   <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">{seatingFee.staffGradeId}</td>
-                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{seatingFee.workstation}</td>
-                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{seatingFee.utilitiesAmenities}</td>
-                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{seatingFee.itSupportHr}</td>
-                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{seatingFee.accountingPayRoll}</td>
+                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(seatingFee.workstation).format()}</td>
+                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(seatingFee.utilitiesAmenities).format()}</td>
+                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(seatingFee.itSupportHr).format()}</td>
+                  <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(seatingFee.accountingPayRoll).format()}</td>
                   <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">
                     {editedSeatingFeeId === seatingFee.id ? (
                       <EditForm
@@ -281,8 +283,8 @@ const UpdatePricePage: React.FC = () => {
                   {existingRecruitmentFees.map(recruitmentFee => (
                     <tr className="bg-white" key={`recruitmentfee-${recruitmentFee.id}`}>
                       <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">{recruitmentFee.id}</td>
-                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{recruitmentFee.advertisement}</td>
-                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{recruitmentFee.recruitment}</td>
+                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(recruitmentFee.advertisement).format()}</td>
+                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(recruitmentFee.recruitment).format()}</td>
                       <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">
                         {editedRecruitmentFeeId === recruitmentFee.id ? (
                           <EditForm
@@ -321,10 +323,10 @@ const UpdatePricePage: React.FC = () => {
                   {existingOtherPayments.map(otherPayment => (
                     <tr className="bg-white" key={`otherpayment-${otherPayment.id}`}>
                       <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">{otherPayment.id}</td>
-                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{otherPayment.servicesPhone}</td>
-                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{otherPayment.computerUpgrade}</td>
-                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{otherPayment.optiCompTaxes}</td>
-                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{otherPayment.medicalInsurance}</td>
+                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.servicesPhone).format()}</td>
+                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.computerUpgrade).format()}</td>
+                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.optiCompTaxes).format()}</td>
+                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.medicalInsurance).format()}</td>
                       <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">
                         {editedOtherPaymentId === otherPayment.id ? (
                           <EditForm
@@ -364,7 +366,7 @@ const UpdatePricePage: React.FC = () => {
                       <tr className="bg-white" key={`currency-${currency.id}`}>
                         <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">{currency.id}</td>
                         <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{currency.country}</td>
-                        <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{currency.currency}</td>
+                        <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(currency.currency).format()}</td>
                         <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">
                           {editedCurrencyId === currency.id ? (
                             <EditForm
