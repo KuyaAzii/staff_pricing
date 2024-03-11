@@ -4,7 +4,7 @@ import RequireAuth from '../components/RequireAuth';
 const Login = dynamic(() => import('../components/Login'), { ssr: false });
 
 const Home = () => {
-  const isAuthenticated = false; // Change this to true for authenticated users
+  const isAuthenticated = false; 
 
   return (
     <RequireAuth isAuthenticated={isAuthenticated} redirectTo="/login">
