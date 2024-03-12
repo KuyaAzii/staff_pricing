@@ -1,7 +1,7 @@
 // components/Login.tsx
 "use client";
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 
 
 const Login: React.FC = () => {
@@ -26,7 +26,7 @@ const Login: React.FC = () => {
       const data = await response.json();
       if (response.ok) {
 
-        console.log('Login successful');
+        alert('Login successful');
         router.push('/dashboard');
       } else {
         setError(data.error || 'Login failed. Please check your credentials.');

@@ -166,22 +166,18 @@ const UpdatePricePage: React.FC = () => {
   
 
   const handleClose = () => {
-    // Reset the edited item state
     setEditedDepositId(null);
     setEditedSeatingFeeId(null);
     setEditedRecruitmentFeeId(null);
     setEditedOtherPaymentId(null);
     setEditedCurrencyId(null);
   };
-
   if (loading) {
     return <div>Loading...</div>;
   }
-
   if (error) {
     return <div>Error: {error}</div>;
   }
-
   return (
     <div className="p-5 full-screen bg-white">
       <h1 className="text-2xl font-bold mb-8">Update Price</h1>

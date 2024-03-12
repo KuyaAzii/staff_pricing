@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
     if (req.method !== 'POST') {
       return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
     }
-
     const body = await req.json();
 
     if (!body) {
@@ -27,7 +26,6 @@ export async function POST(req: NextRequest) {
     } else if (!body.ourContent || !body.clientContent) {
       return NextResponse.json({ error: 'Missing properties in request body' }, { status: 400 });
     }
-
     const [ourPdfBuffer, clientPdfBuffer] = await Promise.all([
       generatePdf(body.ourContent, defaultPdfOptions),
       generatePdf(body.clientContent, defaultPdfOptions),
@@ -35,12 +33,11 @@ export async function POST(req: NextRequest) {
 
     const greatestId = await prisma.clientProfiles.aggregate({
       _max: {
-        id: true, // Select the maximum value for the 'id' field
+        id: true, 
       },
     });
     
-    const clientId = greatestId._max.id; // Access the retrieved maximum id
-    
+    const clientId = greatestId._max.id; 
     if (!clientId) {
       throw new Error('No client profiles found.');
     }
@@ -70,17 +67,14 @@ export async function POST(req: NextRequest) {
         },
       }),
     ]);
-
     ourPdfResult.url = `${baseUrl}${ourPdfResult.id}.pdf`;
     clientPdfResult.url = `${baseUrl}${clientPdfResult.id}.pdf`;
-
     return NextResponse.json({ ourPdf: ourPdfResult, clientPdf: clientPdfResult }, { status: 201 });
   } catch (error) {
     console.error('Error saving PDF:', error);
     return NextResponse.json({ error: 'Error saving PDF' }, { status: 500 });
   }
 }
-
 async function generatePdf(content: string, options: any = {}): Promise<Buffer> {
   const browser = await puppeteer.launch();
   try {

@@ -1,7 +1,5 @@
 import React from 'react';
 
-
-
 const DashboardPage = () => {
   return (
     <div className="h-screen bg-cover bg-center" style={{backgroundImage: "url('/path/to/your/image.jpg')"}}>

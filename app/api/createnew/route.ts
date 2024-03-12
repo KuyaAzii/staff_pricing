@@ -315,6 +315,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ data: { grades, staffPosition, staffSalary, currency }, message: "successfully!" }, { status: 200 });
   } catch (error) {
+    
     console.error('Error fetching grade levels:', error);
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
@@ -332,7 +333,9 @@ export async function POST(req: Request) {
       }
     });
     if (!salaryCategory) {
+      alert('Invalid staff salary provided Null');
       throw new Error('Invalid staff salary provided');
+      
     }
 
     const staffCategory = await prisma.staffCategory.findFirst({
@@ -341,6 +344,7 @@ export async function POST(req: Request) {
       }
     });
     if (!staffCategory) {
+      alert('Invalid grade level provided Null');
       throw new Error('Invalid grade level provided');
     }
 
@@ -350,6 +354,7 @@ export async function POST(req: Request) {
       }
     });
     if (!positionCategory) {
+      alert('Invalid staff position provided Null');
       throw new Error('Invalid staff position provided');
     }
 
@@ -359,6 +364,7 @@ export async function POST(req: Request) {
       }
     });
     if (!selectedCurrency) {
+      alert('Invalid currency provided Null');
       throw new Error('Invalid currency provided');
     }
 
@@ -386,6 +392,8 @@ export async function POST(req: Request) {
         });
         console.log("Additional cost created:", newAdditionalCost);
       } catch (error) {
+        
+        alert('Error creating additional cost');
         console.error("Error creating additional cost:", error);
       }
     }));
@@ -393,7 +401,9 @@ export async function POST(req: Request) {
     const costs = await calculateClientStaffCost(staffCategory.id, parseFloat(salary), client, selectedCurrency?.country);
 
     return NextResponse.json({ data: costs, message: "User created successfully!" }, { status: 201 });
+    
   } catch (error) {
+    alert('Check Selection field ');
     console.error('Error creating client or calculating total yearly cost:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }

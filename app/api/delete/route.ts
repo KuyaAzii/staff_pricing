@@ -45,12 +45,13 @@ export async function DELETE(req: NextRequest) {
       await prisma.clientProfiles.delete({
         where: { id: id },
       });
-
+      alert('User deleted successfully!');
       return NextResponse.json({ message: "User deleted successfully!" }, { status: 200 });
     } else {
       return NextResponse.json({ message: 'Method Not Allowed' }, { status: 405 });
     }
   } catch (error) {
+    alert('Error deleting client data');
     console.error('Error deleting client data:', error);
     return NextResponse.json({ message: 'Failed to delete client data' }, { status: 500 });
   }

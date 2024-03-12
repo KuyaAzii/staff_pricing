@@ -38,7 +38,7 @@ const CreateNew = () => {
         clientContent: clientData,
       };
   
-      console.log('Sending data to API:', data); // Log data for debugging
+      console.log('Sending data to API:', data);
   
       const response = await fetch('/api/pdf', {
         method: 'POST',
@@ -50,9 +50,7 @@ const CreateNew = () => {
   
       if (!response.ok) {
         throw new Error('Failed to save PDF');
-      }
-  
-      // Use a different variable name to store the response data
+      }  
       const responseData = await response.json();
       alert('PDF saved successfully!');
   
@@ -60,7 +58,6 @@ const CreateNew = () => {
       console.log('Client PDF URL:', responseData.ourPdf?.url);
     } catch (error) {
       console.error('Error saving PDF:', error);
-      // Handle the error appropriately, such as displaying an error message to the user
     }
   };
   
@@ -354,6 +351,7 @@ const CreateNew = () => {
         console.error('Input Failed:', responseData.message || 'Unknown error');
       }
     } catch (error) {
+      alert('Please re-select your Position, Staff Grade, Salary, or Currency. It appears one of these fields might be empty. Choose a different option and then select your desired option again.');
       setError('An unexpected error occurred. Please try again.');
       console.error('Unexpected error during computation Error:', error);
 
@@ -466,9 +464,9 @@ const CreateNew = () => {
               <button
                 type="submit"
                 className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 focus:outline-none focus:shadow-outline"
-                disabled={loading}
+                
              >
-               {loading ? 'Calculating...' : 'Calculate'}
+              Calculate
                 
               </button>
             </form>

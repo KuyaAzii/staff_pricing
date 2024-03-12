@@ -1,5 +1,4 @@
 // pages/api/login.ts
-
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
@@ -10,11 +9,8 @@ export async function POST(req: Request) {
     const user = await prisma.user.findUnique({
       where: { email },
     });
-
     if (user && user.password === password) {
       console.log('Login successful');
-
-
       
       return NextResponse.json({ data: [], message: "User created successfully!" }, { status: 200});
     } else {

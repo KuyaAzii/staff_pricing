@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-
-
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-  
     let body;
     try {
       body = await req.json();
@@ -16,11 +13,9 @@ export async function POST(req: NextRequest) {
     }
 
     const id = body?.id; 
-
     if (!id) {
       return NextResponse.json({ error: 'Missing or invalid Client ID' }, { status: 400 });
     }
-
     const client = await prisma.clientProfiles.findUnique({
       where: { id: Number(id) },
       select: {
@@ -29,24 +24,18 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-
     if (!client || !client.ourPdf?.length) {
       return NextResponse.json({ error: 'Client profile not found' }, { status: 404 });
     }
-
     if (!client.ourPdf || !client.ourPdf[0].pdfBinaryData) {
       throw new Error('No PDF associated with this Client ID');
     }
-
-    
-    console.log('Retrieved PDF data length:', client.ourPdf[0].pdfBinaryData.length); // Log PDF data length
+    console.log('Retrieved PDF data length:', client.ourPdf[0].pdfBinaryData.length);
+ 
     const pdfData = client.ourPdf[0].pdfBinaryData;
-
-  
     if (pdfData.length === 0) {
       throw new Error('Retrieved PDF data is empty');
     }
-
     return new NextResponse(pdfData, {
       headers: {
         'Content-Type': 'application/pdf',

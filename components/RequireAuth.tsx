@@ -7,7 +7,6 @@ interface RequireAuthProps {
   redirectTo: string;
   children: ReactNode; 
 }
-
 const RequireAuth: React.FC<RequireAuthProps> = ({ isAuthenticated, redirectTo, children }) => {
   const router = useRouter();
 

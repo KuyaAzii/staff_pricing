@@ -3,8 +3,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname()
@@ -12,8 +10,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
     };
-
-
     return (
         <><link
             href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
