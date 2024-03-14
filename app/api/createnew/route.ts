@@ -1,14 +1,14 @@
 
 
 import prisma from '@/lib/prisma';
-import { ClientProfiles } from '@prisma/client';
+// import { ClientProfiles } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 
 const calculateClientStaffCost = async (
   gradeLevel: number,
   staffSalary: number,
-  client: ClientProfiles,
+  client: any,
   selectedCurrency: string
 ) => {
   try {
@@ -398,9 +398,9 @@ export async function POST(req: Request) {
       }
     }));
 
-    const costs = await calculateClientStaffCost(staffCategory.id, parseFloat(salary), client, selectedCurrency?.country);
+    // const costs = await calculateClientStaffCost(staffCategory.id, parseFloat(salary), client, selectedCurrency?.country);
 
-    return NextResponse.json({ data: costs, message: "User created successfully!" }, { status: 201 });
+    return NextResponse.json({ data: [], message: "User created successfully!" }, { status: 201 });
 
   } catch (error) {
     alert('Check Selection field ');
