@@ -1,5 +1,5 @@
 
-import { PrismaClient, ClientProfiles } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
