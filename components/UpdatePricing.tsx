@@ -309,7 +309,6 @@ const UpdatePricePage: React.FC = () => {
                   <tr>
                     <th className="w-100 p-3 text-sm font-semibold tracking-wide text-left">ID</th>
                     <th className="w-150 p-3 text-sm font-semibold tracking-wide text-left">Services Phone</th>
-                    <th className="w-150 p-3 text-sm font-semibold tracking-wide text-left">Computer Upgrade</th>
                     <th className="w-150 p-3 text-sm font-semibold tracking-wide text-left">OptiComp Taxes</th>
                     <th className="w-150 p-3 text-sm font-semibold tracking-wide text-left">Medical Insurance</th>
                     <th className="w-100 p-3 text-sm font-semibold tracking-wide text-left">Action</th>
@@ -320,17 +319,15 @@ const UpdatePricePage: React.FC = () => {
                     <tr className="bg-white" key={`otherpayment-${otherPayment.id}`}>
                       <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">{otherPayment.id}</td>
                       <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.servicesPhone).format()}</td>
-                      <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.computerUpgrade).format()}</td>
                       <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.optiCompTaxes).format()}</td>
                       <td className="w-30 p-3 text-sm text-gray-700 whitespace-nowrap">{numeral(otherPayment.medicalInsurance).format()}</td>
                       <td className="w-20 p-3 text-sm text-gray-700 whitespace-nowrap">
                         {editedOtherPaymentId === otherPayment.id ? (
                           <EditForm
                             id={otherPayment.id}
-                            valueNames={['Services Phone', 'Computer Upgrade', 'OptiComp Taxes', 'Medical Insurance']}
+                            valueNames={['Services Phone', 'OptiComp Taxes', 'Medical Insurance']}
                             values={[
                               otherPayment.servicesPhone.toString(),
-                              otherPayment.computerUpgrade.toString(),
                               otherPayment.optiCompTaxes.toString(),
                               otherPayment.medicalInsurance.toString(),
                             ]}

@@ -57,10 +57,8 @@ const calculateClientStaffCost = async (
       },
       select: {
         servicesPhone: true,
-        computerUpgrade: true,
         optiCompTaxes: true,
         thirteenthMonthPayId: true,
-        seperationPayId: true,
         medicalInsurance: true,
       },
     });
@@ -100,10 +98,10 @@ const calculateClientStaffCost = async (
 
     const totalOtherFees = (
       (otherFees?.servicesPhone || 0) +
-      (otherFees?.computerUpgrade || 0) +
+    
       (otherFees?.optiCompTaxes || 0) +
       (otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) +
-      (otherFees?.seperationPayId ? staffSalary : staffSalary || 0) +
+      
       totalAdditionalCost +
       (otherFees?.medicalInsurance || 0)).toFixed(2);
 
@@ -144,10 +142,10 @@ const calculateClientStaffCost = async (
     const monthlyAdvertisement = ((recruitmentFees?.advertisement || 0) / 12).toFixed(2);
 
     const monthlyServicesPhone = ((otherFees?.servicesPhone || 0) / 12).toFixed(2);
-    const monthlyComputerUpgrade = ((otherFees?.computerUpgrade || 0) / 12).toFixed(2);
+  
     const monthyOptiComTaxes = ((otherFees?.optiCompTaxes || 0) / 12).toFixed(2);
     const monthlyThirteenthMonthlyPay = ((otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) / 12).toFixed(2);
-    const monthlySeperationPay = ((otherFees?.seperationPayId ? staffSalary : staffSalary || 0) / 12).toFixed(2);
+   
     const monthlyMedicalInsurance = ((otherFees?.medicalInsurance || 0) / 12).toFixed(2);
 
     // AUD Yearly
@@ -161,10 +159,10 @@ const calculateClientStaffCost = async (
     const audAdvertisement = ((recruitmentFees?.advertisement || 0) / (toselectedCurrency || 0)).toFixed(2);
 
     const audServicesPhone = ((otherFees?.servicesPhone || 0) / (toselectedCurrency || 0)).toFixed(2);
-    const audComputerUpgrade = ((otherFees?.computerUpgrade || 0) / (toselectedCurrency || 0)).toFixed(2);
+ 
     const audOptiComTaxes = ((otherFees?.optiCompTaxes || 0) / (toselectedCurrency || 0)).toFixed(2);
     const audThirteenthMonthlyPay = ((otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary || 0) / (toselectedCurrency || 0)).toFixed(2);
-    const audSeperationPay = ((otherFees?.seperationPayId ? staffSalary : staffSalary || 0) / (toselectedCurrency || 0)).toFixed(2);
+    
     const audMedicalInsurance = ((otherFees?.medicalInsurance || 0) / (toselectedCurrency || 0)).toFixed(2);
 
 
@@ -190,10 +188,10 @@ const calculateClientStaffCost = async (
     const audMonthlyAdvertisement = (parseFloat(audAdvertisement) / 12).toFixed(2);
 
     const audMonthlyServicesPhone = (parseFloat(audServicesPhone) / 12).toFixed(2);
-    const audMonthlyComputerUpgrade = (parseFloat(audComputerUpgrade) / 12).toFixed(2);
+
     const audMonthlyOptiComTaxes = (parseFloat(audOptiComTaxes) / 12).toFixed(2);
     const audMonthlyThirteenthMonthlyPay = (parseFloat(audThirteenthMonthlyPay) / 12).toFixed(2);
-    const audMonthlySeperationPay = (parseFloat(audSeperationPay) / 12).toFixed(2);
+  
     const audMonthlyMedicalInsurance = (parseFloat(audMedicalInsurance) / 12).toFixed(2);
 
 
@@ -215,10 +213,10 @@ const calculateClientStaffCost = async (
       advertisement: recruitmentFees?.advertisement,
 
       servicesPhone: otherFees?.servicesPhone,
-      computerUpgrade: otherFees?.computerUpgrade,
+   
       optiCompTaxes: otherFees?.optiCompTaxes,
       thirteenthMonthPay: otherFees?.thirteenthMonthPayId ? staffSalary : staffSalary,
-      seperationPay: otherFees?.seperationPayId ? staffSalary : staffSalary,
+   
       medicalInsurance: otherFees?.medicalInsurance,
 
 
@@ -249,10 +247,10 @@ const calculateClientStaffCost = async (
       monthlyRecruitment,
       monthlyAdvertisement,
       monthlyServicesPhone,
-      monthlyComputerUpgrade,
+   
       monthyOptiComTaxes,
       monthlyThirteenthMonthlyPay,
-      monthlySeperationPay,
+ 
       monthlyMedicalInsurance,
 
       audWorkstation,
@@ -262,10 +260,10 @@ const calculateClientStaffCost = async (
       audRecruitment,
       audAdvertisement,
       audServicesPhone,
-      audComputerUpgrade,
+      
       audOptiComTaxes,
       audThirteenthMonthlyPay,
-      audSeperationPay,
+      
       audMedicalInsurance,
       audTotalYearlySalary,
       audDeposit,
@@ -281,10 +279,10 @@ const calculateClientStaffCost = async (
       audMonthlyRecruitment,
       audMonthlyAdvertisement,
       audMonthlyServicesPhone,
-      audMonthlyComputerUpgrade,
+      
       audMonthlyOptiComTaxes,
       audMonthlyThirteenthMonthlyPay,
-      audMonthlySeperationPay,
+     
       audMonthlyMedicalInsurance,
 
       additionalCost,
@@ -334,7 +332,7 @@ export async function POST(req: Request) {
       }
     });
     if (!salaryCategory) {
-      alert('Invalid staff salary provided Null');
+     
       throw new Error('Invalid staff salary provided');
       
     }
@@ -345,7 +343,7 @@ export async function POST(req: Request) {
       }
     });
     if (!staffCategory) {
-      alert('Invalid grade level provided Null');
+     
       throw new Error('Invalid grade level provided');
     }
 
@@ -355,7 +353,7 @@ export async function POST(req: Request) {
       }
     });
     if (!positionCategory) {
-      alert('Invalid staff position provided Null');
+      
       throw new Error('Invalid staff position provided');
     }
 
@@ -365,7 +363,7 @@ export async function POST(req: Request) {
       }
     });
     if (!selectedCurrency) {
-      alert('Invalid currency provided Null');
+      
       throw new Error('Invalid currency provided');
     }
 

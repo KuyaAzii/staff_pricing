@@ -44,7 +44,6 @@ export async function PUT(req: NextRequest) {
             where: { id: itemId },
             data: { deposit: parsedNewValues[0] },
           });
-          alert('Item updated successfully');
           return NextResponse.json({ message: 'Item updated successfully', updatedItem: updatedDeposit }, { status: 200 });
         case 'seatingFee':
           const updatedSeatingFee = await prisma.seatingFees.update({
@@ -56,7 +55,6 @@ export async function PUT(req: NextRequest) {
               accountingPayRoll: parsedNewValues[3],
             },
           });
-          alert('Item updated successfully');
           return NextResponse.json({ message: 'Item updated successfully', updatedItem: updatedSeatingFee }, { status: 200 });
         case 'recruitmentFee':
           const updatedRecruitmentFee = await prisma.recruitmentFees.update({
@@ -66,19 +64,17 @@ export async function PUT(req: NextRequest) {
               recruitment: parsedNewValues[1],
             },
           });
-          alert('Item updated successfully');
           return NextResponse.json({ message: 'Item updated successfully', updatedItem: updatedRecruitmentFee }, { status: 200 });
         case 'otherPayment':
           const updatedOtherPayment = await prisma.otherPayments.update({
             where: { id: itemId },
             data: {
               servicesPhone: parsedNewValues[0],
-              computerUpgrade: parsedNewValues[1],
-              optiCompTaxes: parsedNewValues[2],
-              medicalInsurance: parsedNewValues[3],
+              optiCompTaxes: parsedNewValues[1],
+              medicalInsurance: parsedNewValues[2],
             },
           });
-          alert('Item updated successfully');
+          
           return NextResponse.json({ message: 'Item updated successfully', updatedItem: updatedOtherPayment }, { status: 200 });
         case 'currency':
           const updatedCurrency = await prisma.currency.update({
@@ -87,7 +83,7 @@ export async function PUT(req: NextRequest) {
               currency: parsedNewValues[0],
             },
           });
-          alert('Item updated successfully');
+      
           return NextResponse.json({ message: 'Item updated successfully', updatedItem: updatedCurrency }, { status: 200 });
         default:
           return NextResponse.json({ error: 'Invalid item type' }, { status: 400 });

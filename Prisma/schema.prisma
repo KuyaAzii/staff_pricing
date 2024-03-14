@@ -70,7 +70,6 @@ model SalaryCategory {
   staffSalary        Float
   clients            ClientProfiles[]
   thirteenthMonthPay OtherPayments[]  @relation("ThirteenthMonthPay")
-  seperationPay      OtherPayments[]  @relation("SeperationPay")
 }
 
 model PositionsCategory {
@@ -94,8 +93,6 @@ model OtherPayments {
   optiCompTaxes        Float
   thirteenthMonthPay   SalaryCategory? @relation("ThirteenthMonthPay", fields: [thirteenthMonthPayId], references: [id])
   thirteenthMonthPayId Int?
-  seperationPay        SalaryCategory? @relation("SeperationPay", fields: [seperationPayId], references: [id])
-  seperationPayId      Int?
   medicalInsurance     Float
   addCost              AdditionalCost? @relation("AddCost", fields: [addCostId], references: [id])
   addCostId            Int?

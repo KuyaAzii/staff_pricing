@@ -1,7 +1,8 @@
 // components/Login.tsx
 "use client";
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import React, { useState} from 'react';
+import React, { useEffect, useState } from 'react';
 
 
 const Login: React.FC = () => {
@@ -10,28 +11,29 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter()
+  const session = useSession()
+
+useEffect(() => {
+  if(session.status === 'authenticated'){
+    router.push('/dashboard')
+  }
+}, [session])
 
   const handleLogin = async () => {
+    console.log("TEST")
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const signInData = await signIn('credentials', {
+        email: email,
+        password: password,
+        redirect: false,
       });
-      const data = await response.json();
-      if (response.ok) {
-
-        alert('Login successful');
-        router.push('/dashboard');
-      } else {
-        setError(data.error || 'Login failed. Please check your credentials.');
-        console.error('Login failed:', data.error || 'Unknown error');
-      }
+      if (signInData?.error && signInData.status === 401) {
+        throw new Error('Invalid Email or Password!');
+      } router.push('/dashboard');
+      setLoading(false);
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');
       console.error('Unexpected error during login:', error);

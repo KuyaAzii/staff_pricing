@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     if (user && user.password === password) {
       console.log('Login successful');
       
-      return NextResponse.json({ data: [], message: "User created successfully!" }, { status: 200});
+      return NextResponse.json({ data: user, message: "User created successfully!" }, { status: 200});
     } else {
       console.log('Invalid credentials');
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401});

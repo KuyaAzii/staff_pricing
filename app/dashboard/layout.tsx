@@ -1,4 +1,5 @@
 "use client"
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -6,7 +7,7 @@ import { useState } from "react";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname()
-    
+
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
     };
@@ -33,10 +34,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         <Link href={'/dashboard/createnew'} className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}>   <i className="ri-chat-new-line mr-3 text-lg" /> Create New</Link>
                     </li>
                     <li className={`mb-1 group ${pathname.includes('lists') ? 'active' : ''}`}>
-                    <Link href={'/dashboard/lists'} className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}>   <i className="ri-file-list-3-line mr-3 text-lg" /> Lists</Link>
+                        <Link href={'/dashboard/lists'} className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}>   <i className="ri-file-list-3-line mr-3 text-lg" /> Lists</Link>
                     </li>
                     <li className={`mb-1 group ${pathname.includes('updatepricing') ? 'active' : ''}`}>
-                    <Link href={'/dashboard/updatepricing'} className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}>   <i className="ri-edit-2-fill mr-3 text-lg" /> Update Price</Link>
+                        <Link href={'/dashboard/updatepricing'} className={`flex items-center py-2 px-4 text-gray-300 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100`}>   <i className="ri-edit-2-fill mr-3 text-lg" /> Update Price</Link>
+                    </li>
+                    <li>
+                        <button type="button" className="text-white font-medium text-xl border rounded px-4  py-1 " onClick={() => {
+                            signOut()
+                        }}>
+                            Logout
+                        </button>
                     </li>
                     {/* ... (similar changes for other menu items) ... */}
                 </ul>
