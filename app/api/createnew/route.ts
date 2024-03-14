@@ -1,5 +1,5 @@
 
-import { PrismaClient } from '@prisma/client';
+import { ClientProfiles, PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const calculateClientStaffCost = async (
   gradeLevel: number,
   staffSalary: number,
-  client: any,
+  client: ClientProfiles,
   selectedCurrency: string
 ) => {
   try {
