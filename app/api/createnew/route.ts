@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const calculateClientStaffCost = async (
   gradeLevel: number,
   staffSalary: number,
-  client: ClientProfiles,
+  client: any,
   selectedCurrency: string
 ) => {
   try {
